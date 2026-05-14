@@ -1,0 +1,160 @@
+{
+  "products": [
+    {
+      "group": "ADC",
+      "children": [
+        "Blenrep (Belantamab mafodotin)"
+      ]
+    },
+    {
+      "group": "Bispecific Abs",
+      "children": [
+        "Elrexfio (Elranatamab)",
+        "Lynozyfic (Linvoseltamab)",
+        "Multiple",
+        "Non-specific",
+        "Talvey (Talquetamab)",
+        "Tecvayli (Teclistamab)"
+      ]
+    },
+    {
+      "group": "CAR-T",
+      "children": [
+        "CAR-T",
+        "Multiple"
+      ]
+    },
+    {
+      "group": "Multiple",
+      "children": [
+        "Multiple"
+      ]
+    },
+    {
+      "group": "Non-specific",
+      "children": [
+        "Non-specific"
+      ]
+    },
+    {
+      "group": "Targeted Tx",
+      "children": [
+        "Darzalex (Daratumumab)",
+        "Empliciti (Elotuzumab)"
+      ]
+    }
+  ],
+  "indications": [
+    "2LMM",
+    "3LMM",
+    "4LMM",
+    "RRMM"
+  ],
+  "pub_types": [
+    "Conference",
+    "Manuscript"
+  ],
+  "study_types": [
+    "Clinical trial",
+    "Economic model",
+    "NMA / ITC",
+    "Other",
+    "RWD",
+    "SLR / TLR"
+  ],
+  "geographies": [
+    "Australia",
+    "Austria",
+    "Brazil",
+    "Canada",
+    "China",
+    "Europe",
+    "France",
+    "Germany",
+    "Global",
+    "Greece",
+    "Japan",
+    "Netherlands",
+    "Poland",
+    "South Korea",
+    "Spain",
+    "Taiwan",
+    "USA",
+    "United Kingdom"
+  ],
+  "sponsors": [
+    "Academia",
+    "Industry"
+  ],
+  "categories": [
+    {
+      "category": "Burden - Clinical",
+      "subcategories": [
+        "Epidemiology",
+        "Morbidity / mortality"
+      ]
+    },
+    {
+      "category": "Burden - Humanistic",
+      "subcategories": [
+        "Caregiver impact",
+        "PROs",
+        "Patient insight"
+      ]
+    },
+    {
+      "category": "Burden - Socioeconomic",
+      "subcategories": [
+        "Caregiver impact",
+        "Direct costs",
+        "Health resource utilisation",
+        "Indirect costs",
+        "Productivity impact",
+        "Societal burden"
+      ]
+    },
+    {
+      "category": "Efficacy/effectiveness",
+      "subcategories": [
+        "Clinical efficacy/effectiveness",
+        "Comparative effectiveness",
+        "PROs"
+      ]
+    },
+    {
+      "category": "Management",
+      "subcategories": [
+        "Guidelines/recommendations",
+        "HTA reports",
+        "Treatment patterns"
+      ]
+    },
+    {
+      "category": "Product Economic value",
+      "subcategories": [
+        "Budget impact",
+        "Cost effectiveness",
+        "HCRU/Cost of care"
+      ]
+    },
+    {
+      "category": "Product specific",
+      "subcategories": [
+        "Dosing / utilisation",
+        "Mechanism of action",
+        "Pharmacokinetics",
+        "Pivotal study",
+        "Regulatory"
+      ]
+    },
+    {
+      "category": "Safety",
+      "subcategories": [
+        "CRS",
+        "ICANS",
+        "Infections",
+        "Safety - General"
+      ]
+    }
+  ]
+}
