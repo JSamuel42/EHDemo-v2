@@ -8,13 +8,7 @@ runConfig:
 
 env:
   - variable: NODE_ENV
-    value: demo
-
-  - variable: ANTHROPIC_API_KEY
-    secret: anthropic-api-key
-
-  - variable: DEMO_PASSWORD
-    secret: evidencehub-demo-password
-
-  - variable: SESSION_SECRET
-    secret: evidencehub-session-secret
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
