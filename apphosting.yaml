@@ -1,0 +1,20 @@
+# apphosting.yaml  (committed to git — NO secrets here)
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0      # scale-to-zero saves cost on a demo
+  maxInstances: 1
+  concurrency: 80
+
+env:
+  - variable: NODE_ENV
+    value: demo
+
+  - variable: ANTHROPIC_API_KEY
+    secret: anthropic-api-key
+
+  - variable: DEMO_PASSWORD
+    secret: evidencehub-demo-password
+
+  - variable: SESSION_SECRET
+    secret: evidencehub-session-secret
