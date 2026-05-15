@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE_NAME, verifySessionToken } from '@/lib/session';
 
-export const runtime = 'nodejs';
-
 const PUBLIC_PATHS = ['/access', '/api/access'];
 
 export function proxy(req: NextRequest) {
