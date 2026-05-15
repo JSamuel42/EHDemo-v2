@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 const PUBLIC_PATHS = ['/access', '/api/access'];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (
