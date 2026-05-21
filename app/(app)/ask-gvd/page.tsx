@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GVD_NAV, GVD_SECTIONS_BY_NUMBER } from '@/lib/askgvd/data';
 import {
   GVD_DOCUMENTS,
@@ -17,11 +17,40 @@ import { cn } from '@/lib/cn';
 // reader sees real content rather than the cover or TOC.
 const DEFAULT_PAGE = 7;
 
+// Citation-flash visible duration. Matches the citation-banner-fade keyframe
+// in globals.css — change both together if tuning.
+const FLASH_MS = 8000;
+
+interface CitationFlash {
+  section: string;
+  page: number;
+  title: string;
+  /** Date.now() at click time. Doubles as a remount key for the animation. */
+  key: number;
+}
+
+/** Best-effort title lookup for a cited section number. Tries the corpus
+ *  section map first, then the chapter list, then sub-section lookups in
+ *  nav. Falls back to a generic label if nothing matches. */
+function lookupSectionTitle(section: string): string {
+  const sec = GVD_SECTIONS_BY_NUMBER[section];
+  if (sec?.title) return sec.title;
+  const chap = GVD_NAV.chapters.find(c => c.number === section);
+  if (chap?.title) return chap.title;
+  for (const ch of GVD_NAV.chapters) {
+    const s = ch.sections.find(s => s.number === section);
+    if (s?.title) return s.title;
+  }
+  return `Section ${section}`;
+}
+
 export default function AskGvdPage() {
   const [activeDocumentId, setActiveDocumentId] = useState(DEFAULT_DOCUMENT_ID);
   const [activeChapter, setActiveChapter] = useState('1');
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activePage, setActivePage] = useState(DEFAULT_PAGE);
+  const [citationFlash, setCitationFlash] = useState<CitationFlash | null>(null);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeDoc = getDocumentById(activeDocumentId);
 
@@ -30,7 +59,9 @@ export default function AskGvdPage() {
   // Citations in chat responses come as (Section X.Y, p. N). The page
   // number is the most useful signal — drive the PDF viewer directly off
   // it. We also update activeChapter/Section so the ChapterNav highlights
-  // the cited location.
+  // the cited location, and surface a transient banner + ChapterNav pulse
+  // as a "where in the doc this came from" cue (the PDF itself can't be
+  // overlaid because it renders in the browser's built-in viewer).
   const handleCitationClick = useCallback((section: string, page: number) => {
     const chapter = section.split('.')[0];
     setActiveChapter(chapter);
@@ -38,12 +69,27 @@ export default function AskGvdPage() {
     if (Number.isFinite(page) && page > 0) {
       setActivePage(page);
     }
+    setCitationFlash({
+      section,
+      page,
+      title: lookupSectionTitle(section),
+      key: Date.now(),
+    });
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    flashTimerRef.current = setTimeout(() => setCitationFlash(null), FLASH_MS);
   }, []);
 
   useEffect(() => {
     setOnCitationClick(handleCitationClick);
     return () => setOnCitationClick(undefined);
   }, [setOnCitationClick, handleCitationClick]);
+
+  // Clear any pending flash-clear timer if the page unmounts mid-flash.
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    };
+  }, []);
 
   function selectChapter(chapterNumber: string) {
     setActiveChapter(chapterNumber);
@@ -87,12 +133,36 @@ export default function AskGvdPage() {
               activeSection={activeSection}
               onSelectChapter={selectChapter}
               onSelectSection={selectSection}
+              flashKey={citationFlash?.key}
             />
           )}
         </div>
       </div>
 
       <div className="flex-1 px-8 pb-6">
+        {/* Citation-source banner. Re-mounts on every citation click (key
+            changes) so the fade animation restarts; auto-clears after
+            FLASH_MS via the setTimeout in handleCitationClick. */}
+        {citationFlash && (
+          <div
+            key={citationFlash.key}
+            className="mb-3 px-4 py-2.5 rounded-md flex items-center gap-3 text-sm animate-citation-banner-fade"
+            style={{
+              backgroundColor: 'rgba(255, 230, 50, 0.18)',
+              border: '1px solid rgba(220, 180, 0, 0.4)',
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="font-mono text-[11px] text-[color:var(--evhub-navy)] font-semibold tracking-wider">
+              §{citationFlash.section} · p.{citationFlash.page}
+            </span>
+            <span className="text-serif-foreground truncate">{citationFlash.title}</span>
+            <span className="ml-auto text-[10px] uppercase tracking-[0.16em] text-serif-muted-foreground font-mono whitespace-nowrap">
+              From citation
+            </span>
+          </div>
+        )}
         {activeDoc?.populated && activeDoc.pdfPath ? (
           <PdfViewer pdfPath={activeDoc.pdfPath} page={activePage} />
         ) : (

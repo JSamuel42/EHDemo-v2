@@ -193,3 +193,32 @@ a {
 .animate-ai-thinking {
   animation: ai-thinking 1.4s ease-in-out infinite;
 }
+
+/* ─── AskGVD citation flash ─────────────────────────────────────────────────
+   When a chat citation is clicked, a translucent yellow banner appears above
+   the PDF viewer showing the cited section + page, and the ChapterNav trigger
+   gives a brief amber pulse. The PDF itself can't be overlaid (it renders in
+   the browser's built-in viewer inside an iframe), so these chrome cues are
+   the visible "where in the doc this came from" signal.
+
+   Banner fades over 8s, matching the auto-clear timeout in page.tsx.
+   Trigger pulse runs once over 2s — long enough to draw the eye, short
+   enough not to feel sticky.                                                   */
+@keyframes citation-banner-fade {
+  0%   { opacity: 0; transform: translateY(-4px); }
+  8%   { opacity: 1; transform: translateY(0);    }
+  85%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.animate-citation-banner-fade {
+  animation: citation-banner-fade 8s ease-in-out forwards;
+}
+
+@keyframes citation-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(220, 180, 0, 0); }
+  20%  { box-shadow: 0 0 0 6px rgba(220, 180, 0, 0.32); }
+  100% { box-shadow: 0 0 0 0   rgba(220, 180, 0, 0); }
+}
+.animate-citation-pulse {
+  animation: citation-pulse 2s ease-out 1;
+}

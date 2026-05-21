@@ -12,6 +12,9 @@ interface Props {
   activeSection: string | null;
   onSelectChapter: (chapterNumber: string) => void;
   onSelectSection: (sectionNumber: string) => void;
+  /** Monotonic id (typically Date.now() of the click); when it changes the
+   *  trigger button briefly pulses to signal a citation just landed. */
+  flashKey?: number;
 }
 
 export default function ChapterNav({
@@ -20,6 +23,7 @@ export default function ChapterNav({
   activeSection,
   onSelectChapter,
   onSelectSection,
+  flashKey,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set([activeChapter]));
@@ -42,8 +46,14 @@ export default function ChapterNav({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
+          // Remount when flashKey changes so the CSS animation runs fresh
+          // even on repeat clicks of the same citation.
+          key={flashKey ?? 'idle'}
           type="button"
-          className="flex items-center gap-2 px-3 py-2 rounded-md border border-serif-border bg-white hover:border-serif-muted-foreground/50 transition-colors text-sm text-serif-foreground max-w-[460px]"
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 rounded-md border border-serif-border bg-white hover:border-serif-muted-foreground/50 transition-colors text-sm text-serif-foreground max-w-[460px]',
+            flashKey !== undefined && 'animate-citation-pulse',
+          )}
           aria-label="Open chapter navigation"
         >
           <BookOpen size={14} className="text-[color:var(--evhub-navy)] flex-shrink-0" />
