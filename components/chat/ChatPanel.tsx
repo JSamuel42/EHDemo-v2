@@ -398,7 +398,7 @@ export default function ChatPanel({ moduleKey }: { moduleKey: ModuleKey }) {
         <div className="flex items-center justify-center gap-2 px-4 py-2.5 border-b border-serif-border bg-white">
           <span
             className={cn(
-              'inline-block h-3 w-3 rounded-full shadow-[0_0_0_3px_rgba(93,202,165,0.18)]',
+              'inline-block h-6 w-6 rounded-full shadow-[0_0_0_6px_rgba(93,202,165,0.18)]',
               streaming ? 'animate-ai-thinking' : '',
             )}
             style={{ backgroundColor: 'var(--evhub-mint)' }}

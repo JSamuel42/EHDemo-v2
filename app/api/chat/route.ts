@@ -201,11 +201,22 @@ export async function POST(req: NextRequest) {
           messages: body.messages.map(m => ({ role: m.role, content: m.content })),
         });
 
+        let usage: Anthropic.Messages.MessageDeltaUsage | null = null;
         for await (const event of sdkStream) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
             const payload = JSON.stringify({ text: event.delta.text });
             controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+          } else if (event.type === 'message_delta' && event.usage) {
+            usage = event.usage;
           }
+        }
+
+        if (usage && process.env.NODE_ENV !== 'production') {
+          console.log('[chat] cache:', {
+            write: usage.cache_creation_input_tokens ?? 0,
+            read: usage.cache_read_input_tokens ?? 0,
+            uncached: usage.input_tokens ?? 0,
+          });
         }
 
         controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
