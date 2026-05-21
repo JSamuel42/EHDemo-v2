@@ -13,9 +13,9 @@ export interface ModuleGroupDef {
 }
 
 export const MODULE_GROUPS: ModuleGroupDef[] = [
-  { key: 'core', label: 'Core materials' },
-  { key: 'country-readiness', label: 'Country readiness' },
-  { key: 'evidence-synthesis', label: 'Evidence synthesis', sublabel: 'Custom dashboards' },
+  { key: 'core', label: 'Evidence Layer' },
+  { key: 'country-readiness', label: 'Core Readiness Pack' },
+  { key: 'evidence-synthesis', label: 'Custom Applications' },
 ];
 
 export type ModuleKey =
