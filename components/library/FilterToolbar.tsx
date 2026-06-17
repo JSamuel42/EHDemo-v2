@@ -1,6 +1,6 @@
 'use client';
 
-import { FILTER_TREE } from '@/lib/library/data';
+import { FILTER_TREE, type FilterTree } from '@/lib/library/data';
 import { type FilterState, EMPTY_FILTERS, isFilterActive } from '@/lib/library/filters';
 import FilterDropdown from './FilterDropdown';
 import TreeFilterDropdown from './TreeFilterDropdown';
@@ -8,15 +8,18 @@ import TreeFilterDropdown from './TreeFilterDropdown';
 interface Props {
   state: FilterState;
   onChange: (next: FilterState) => void;
+  /** Asset-scoped filter tree. Defaults to the Alnyx tree so existing
+   *  call sites are unchanged; the Library passes the active asset's tree. */
+  tree?: FilterTree;
 }
 
-export default function FilterToolbar({ state, onChange }: Props) {
+export default function FilterToolbar({ state, onChange, tree = FILTER_TREE }: Props) {
   function update(partial: Partial<FilterState>) {
     onChange({ ...state, ...partial });
   }
 
-  const productTree = FILTER_TREE.products.map(p => ({ parent: p.group, children: p.children }));
-  const categoryTree = FILTER_TREE.categories.map(c => ({
+  const productTree = tree.products.map(p => ({ parent: p.group, children: p.children }));
+  const categoryTree = tree.categories.map(c => ({
     parent: c.category,
     children: c.subcategories,
   }));
@@ -34,34 +37,42 @@ export default function FilterToolbar({ state, onChange }: Props) {
       />
       <FilterDropdown
         label="Indication"
-        options={FILTER_TREE.indications}
+        options={tree.indications}
         selected={state.indications}
         onChange={v => update({ indications: v })}
       />
       <FilterDropdown
         label="Pub type"
-        options={FILTER_TREE.pub_types}
+        options={tree.pub_types}
         selected={state.pubTypes}
         onChange={v => update({ pubTypes: v })}
       />
       <FilterDropdown
         label="Study type"
-        options={FILTER_TREE.study_types}
+        options={tree.study_types}
         selected={state.studyTypes}
         onChange={v => update({ studyTypes: v })}
       />
       <FilterDropdown
         label="Geography"
-        options={FILTER_TREE.geographies}
+        options={tree.geographies}
         selected={state.geographies}
         onChange={v => update({ geographies: v })}
       />
       <FilterDropdown
         label="Sponsor"
-        options={FILTER_TREE.sponsors}
+        options={tree.sponsors}
         selected={state.sponsors}
         onChange={v => update({ sponsors: v })}
       />
+      {tree.funnel_levels && tree.funnel_levels.length > 0 && (
+        <FilterDropdown
+          label="Funnel level"
+          options={tree.funnel_levels}
+          selected={state.funnelLevels}
+          onChange={v => update({ funnelLevels: v })}
+        />
+      )}
       <TreeFilterDropdown
         label="Category"
         tree={categoryTree}

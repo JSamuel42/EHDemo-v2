@@ -2,16 +2,20 @@
 
 import { Suspense, useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Sparkles, CalendarClock, Clock, FileText } from 'lucide-react';
-import { ARTICLES, type Article } from '@/lib/library/data';
+import { Search, Sparkles, CalendarClock, Clock, FileText, Pencil } from 'lucide-react';
+import { type Article } from '@/lib/library/data';
 import {
   EMPTY_FILTERS,
   applyFilters,
   isFilterActive,
+  dateThresholdCounts,
   type FilterState,
-  DATE_THRESHOLD_COUNTS,
   type DateThresholdKey,
 } from '@/lib/library/filters';
+import { LIBRARY_DATASETS } from '@/lib/library/datasets';
+import { useActiveAsset } from '@/components/layout/ActiveAssetContext';
+import { useLibraryStore } from '@/lib/library/istent-store';
+import { useAdminMode } from '@/lib/admin/AdminModeContext';
 import {
   useChatPanel,
   type CustomSuggestedQuestion,
@@ -19,12 +23,37 @@ import {
 import FilterToolbar from '@/components/library/FilterToolbar';
 import LibraryTable from '@/components/library/LibraryTable';
 import Pagination from '@/components/library/Pagination';
+import DossierTagModal from '@/components/library/DossierTagModal';
+import { seedDossierDemo } from '@/lib/dossier/seed';
+import {
+  listDossiers,
+  getArticleSectionNumbers,
+  getDossierSections,
+  flattenSectionTree,
+  linkArticle,
+  unlinkArticle,
+  getArticleNumber,
+} from '@/lib/dossier/store';
 import { cn } from '@/lib/cn';
 
 const PAGE_SIZE = 50;
 /** Max articles attached to a single Summarise request — keeps the
  *  system prompt within Claude's context budget for the demo. */
 const SUMMARISE_CAP = 30;
+
+/** Shorten verbose region labels so the dossier columns stay narrow. */
+function shortenRegion(region: string): string {
+  if (region === 'United Kingdom') return 'UK';
+  return region;
+}
+
+/** Section IDs an article is currently linked to within a given dossier —
+ *  seeds the tag modal's checkbox state. */
+function linkedSectionIdsFor(dossierId: string, articleId: string): string[] {
+  return flattenSectionTree(getDossierSections(dossierId))
+    .filter(s => s.articleLinks.some(l => l.libraryArticleId === articleId))
+    .map(s => s.id);
+}
 
 /** Build the per-row AttachedItem shape used everywhere selection feeds chat. */
 function toAttachedItem(a: Article) {
@@ -35,51 +64,6 @@ function toAttachedItem(a: Article) {
     kind: 'publication' as const,
   };
 }
-
-/**
- * Library presets — empty-state buttons in the chat panel. Each spec carries:
- *  - buildFilter: returns a FilterState that the page will apply visibly to
- *    the table
- *  - contextPhrase: the human noun phrase substituted into the summarise
- *    request ("articles published in the last 3 months")
- * The shared summariseSubset helper does the rest (attach articles, open
- * the chat, send the request).
- */
-interface LibraryPresetSpec {
-  id: string;
-  label: string;
-  buildFilter: () => FilterState;
-  contextPhrase: string;
-}
-
-const LIBRARY_PRESETS: LibraryPresetSpec[] = [
-  {
-    id: 'last-3-months',
-    label: "See what's new in the last 3 months.",
-    buildFilter: () => ({ ...EMPTY_FILTERS, dateThreshold: 'LAST_3_MONTHS' }),
-    contextPhrase: 'articles published in the last 3 months',
-  },
-  {
-    id: 'comparative-effectiveness',
-    label: "What's new on comparative effectiveness?",
-    buildFilter: () => ({
-      ...EMPTY_FILTERS,
-      categories: new Set(['Comparative effectiveness']),
-    }),
-    contextPhrase: 'articles on comparative effectiveness',
-  },
-  {
-    id: 'recommendations-management',
-    label: "What's current recommendations on management?",
-    buildFilter: () => ({
-      ...EMPTY_FILTERS,
-      categoryParents: new Set(['Management']),
-      categories: new Set(['Guidelines/recommendations']),
-      dateThreshold: 'LAST_3_MONTHS',
-    }),
-    contextPhrase: 'articles on current recommendations for management',
-  },
-];
 
 /**
  * The Suspense wrapper exists for `useSearchParams` — Next.js requires
@@ -96,23 +80,53 @@ export default function LibraryPage() {
 }
 
 function LibraryPageInner() {
+  // Active asset drives dataset, filter tree, presets and dossier features.
+  const { activeAsset } = useActiveAsset();
+  const dataset = LIBRARY_DATASETS[activeAsset];
+  const isIstent = dataset.hasDossiers;
+
+  // iStent uses the in-session store (inline-edit overlay); Alnyx reads the
+  // static dataset unchanged. Hooks are called unconditionally (rules of
+  // hooks); the Alnyx path simply ignores the store's articles.
+  const { allArticles: istentArticles, updateArticleField } = useLibraryStore();
+  const { isAdminMode, toggleAdminMode } = useAdminMode();
+  const articles = isIstent ? istentArticles : dataset.articles;
+  const adminActive = isIstent && isAdminMode;
+
   const [filterState, setFilterState] = useState<FilterState>(EMPTY_FILTERS);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [dossierColumns, setDossierColumns] = useState<{ id: string; label: string }[]>([]);
+  const [dossierSectionLookup, setDossierSectionLookup] = useState<
+    Record<string, Record<string, string[]>>
+  >({});
+
+  // Admin-mode tag-to-section modal target (article × dossier), null when closed.
+  const [tagTarget, setTagTarget] = useState<{
+    article: Article;
+    dossierId: string;
+    label: string;
+  } | null>(null);
 
   const searchParams = useSearchParams();
   const targetArticleId = searchParams?.get('article') ?? null;
 
-  // Deep-link handler — citation chips in SN / VM / OH link to
-  // /library?article=<id>. When that param is present, clear any active
-  // filters so the row is in the visible set, jump to the page it sits
-  // on (default sort = source order in ARTICLES), then on the next tick
-  // scroll the row into view and tint it mint for ~2.4s. Silent no-op
-  // when the ID doesn't match.
+  // Reset transient view state whenever the active asset changes — filters,
+  // selection and page belong to one dataset and must not leak across the
+  // switch (e.g. a funnel-level filter set under iStent would empty Alnyx).
+  useEffect(() => {
+    setFilterState(EMPTY_FILTERS);
+    setSelectedIds(new Set());
+    setPage(1);
+  }, [activeAsset]);
+
+  // Deep-link handler — citation chips link to /library?article=<id>. Clears
+  // filters so the row is in the visible set, jumps to its page, then scrolls
+  // + tints it mint for ~2.4s. Silent no-op when the ID isn't in the set.
   useEffect(() => {
     if (!targetArticleId) return;
-    const idx = ARTICLES.findIndex(a => a.id === targetArticleId);
+    const idx = articles.findIndex(a => a.id === targetArticleId);
     if (idx < 0) return;
 
     setFilterState(EMPTY_FILTERS);
@@ -120,9 +134,6 @@ function LibraryPageInner() {
     setPage(Math.floor(idx / PAGE_SIZE) + 1);
     setHighlightedId(targetArticleId);
 
-    // Let React commit the new page + filter state before we look up the
-    // DOM node. requestAnimationFrame would also work; setTimeout(0) is
-    // explicit and easier to read.
     const scrollT = setTimeout(() => {
       const el = document.getElementById(`article-${targetArticleId}`);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -132,17 +143,51 @@ function LibraryPageInner() {
       clearTimeout(scrollT);
       clearTimeout(clearT);
     };
-  }, [targetArticleId]);
+  }, [targetArticleId, articles]);
 
-  const filtered = useMemo(() => applyFilters(ARTICLES, filterState), [filterState]);
+  // Build the per-dossier columns + article→section-number lookup from the
+  // in-memory dossier store (iStent only). Extracted so admin-mode tagging can
+  // refresh the table cells immediately after linking/unlinking.
+  const refreshDossierData = useCallback(() => {
+    if (!isIstent) {
+      setDossierColumns([]);
+      setDossierSectionLookup({});
+      return;
+    }
+    const dossiers = listDossiers();
+    setDossierColumns(dossiers.map(d => ({ id: d.id, label: shortenRegion(d.region) })));
+
+    const lookup: Record<string, Record<string, string[]>> = {};
+    for (const d of dossiers) {
+      const byArticle: Record<string, string[]> = {};
+      for (const a of articles) {
+        const nums = getArticleSectionNumbers(d.id, a.id);
+        if (nums.length > 0) byArticle[a.id] = nums;
+      }
+      lookup[d.id] = byArticle;
+    }
+    setDossierSectionLookup(lookup);
+  }, [isIstent, articles]);
+
+  useEffect(() => {
+    if (isIstent) seedDossierDemo();
+    refreshDossierData();
+  }, [isIstent, refreshDossierData]);
+
+  const filtered = useMemo(
+    () => applyFilters(articles, filterState, dataset.dateThresholds),
+    [articles, filterState, dataset.dateThresholds],
+  );
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const dateCounts = useMemo(
+    () => dateThresholdCounts(articles, dataset.dateThresholds),
+    [articles, dataset.dateThresholds],
+  );
+
   useEffect(() => {
-    // Skip the auto-page-reset while a deep-link is targeting a specific
-    // row — the deep-link effect above clears filters AND sets page to
-    // the target row's page, and this effect would otherwise overwrite
-    // that page number back to 1.
+    // Skip the auto-page-reset while a deep-link is targeting a specific row.
     if (targetArticleId) return;
     setPage(1);
   }, [filterState, targetArticleId]);
@@ -155,15 +200,11 @@ function LibraryPageInner() {
     setCustomSuggestedQuestions,
   } = useChatPanel();
 
-  // Selection → chat attachments. Kept as a side-effect so toggling row
-  // checkboxes updates the chat panel's attachment chips without explicit
-  // wiring at every call site. The Summarise / preset flows bypass this by
-  // passing an attachedItemIdsOverride into sendMessage — they don't depend
-  // on selection state having propagated.
+  // Selection → chat attachments.
   useEffect(() => {
-    const items = ARTICLES.filter(a => selectedIds.has(a.id)).map(toAttachedItem);
+    const items = articles.filter(a => selectedIds.has(a.id)).map(toAttachedItem);
     setAttachedItems(items);
-  }, [selectedIds, setAttachedItems]);
+  }, [selectedIds, setAttachedItems, articles]);
 
   function toggleSelected(id: string) {
     setSelectedIds(curr => {
@@ -194,20 +235,17 @@ function LibraryPageInner() {
     }));
   }
 
-  // Shared helper — all four Summarise entry points (button × selection,
-  // button × filters, presets × 3) route through this. Attaches the subset
-  // (capped at SUMMARISE_CAP), opens the chat panel, and sends a summarise
-  // request whose wording is determined by the caller's `contextPhrase`.
+  // Shared helper — all Summarise entry points route through this. Attaches the
+  // subset (capped at SUMMARISE_CAP), opens the chat panel, and sends a
+  // summarise request worded by the caller's `contextPhrase`.
   const summariseSubset = useCallback(
-    (articles: Article[], contextPhrase: string) => {
-      const total = articles.length;
+    (items: Article[], contextPhrase: string) => {
+      const total = items.length;
       if (total === 0) return;
 
-      const subset = articles.slice(0, SUMMARISE_CAP);
+      const subset = items.slice(0, SUMMARISE_CAP);
       const attached = subset.map(toAttachedItem);
 
-      // Set attachments for display chips. The override below makes
-      // sendMessage independent of when React commits this update.
       setAttachedItems(attached);
       setIsOpen(true);
 
@@ -225,28 +263,24 @@ function LibraryPageInner() {
     [setAttachedItems, setIsOpen, sendMessage],
   );
 
-  // Register Library presets as the chat panel's custom suggested questions
-  // while this page is mounted. Each preset's onClick visibly applies its
-  // filter spec, clears any existing selection (presets summarise the filter
-  // result, not whatever was selected before), then routes through
-  // summariseSubset using applyFilters synchronously — state from
-  // setFilterState above hasn't committed yet, so we can't rely on the
-  // memoised `filtered`.
+  // Register the active asset's presets as the chat panel's custom suggested
+  // questions while this page is mounted. Each preset visibly applies its
+  // filter spec, clears selection, then summarises the filtered result.
   useEffect(() => {
-    const presets: CustomSuggestedQuestion[] = LIBRARY_PRESETS.map(p => ({
+    const presets: CustomSuggestedQuestion[] = dataset.presets.map(p => ({
       id: p.id,
       label: p.label,
       onClick: () => {
         const newFilter = p.buildFilter();
         setFilterState(newFilter);
         setSelectedIds(new Set());
-        const matched = applyFilters(ARTICLES, newFilter);
+        const matched = applyFilters(articles, newFilter, dataset.dateThresholds);
         summariseSubset(matched, p.contextPhrase);
       },
     }));
     setCustomSuggestedQuestions(presets);
     return () => setCustomSuggestedQuestions(null);
-  }, [setCustomSuggestedQuestions, summariseSubset]);
+  }, [setCustomSuggestedQuestions, summariseSubset, articles, dataset]);
 
   // Summarise-button visibility + label
   const filtersActive = useMemo(() => isFilterActive(filterState), [filterState]);
@@ -263,25 +297,43 @@ function LibraryPageInner() {
 
   const handleSummariseClick = useCallback(() => {
     if (hasSelection) {
-      const selected = ARTICLES.filter(a => selectedIds.has(a.id));
+      const selected = articles.filter(a => selectedIds.has(a.id));
       const noun = selected.length === 1 ? 'selected article' : 'selected articles';
       summariseSubset(selected, noun);
     } else if (filtersActive) {
       summariseSubset(filtered, 'articles matching the current filters');
     }
-  }, [hasSelection, filtersActive, selectedIds, filtered, summariseSubset]);
+  }, [hasSelection, filtersActive, selectedIds, filtered, summariseSubset, articles]);
 
   // Indicator 1 label adapts: "119 articles" when no filters, "47 of 119" when filtered.
-  const isFiltered = filtered.length !== ARTICLES.length;
+  const isFiltered = filtered.length !== articles.length;
   const primaryLabel = isFiltered
-    ? `${filtered.length} of ${ARTICLES.length} articles`
-    : `${ARTICLES.length} articles`;
+    ? `${filtered.length} of ${articles.length} articles`
+    : `${articles.length} articles`;
 
   return (
     <div className="px-8 py-7">
       <div className="flex items-baseline justify-between mb-5 gap-4">
         <h1 className="font-playfair text-3xl text-serif-foreground">Library</h1>
         <div className="flex items-center gap-2">
+          {isIstent && (
+            <button
+              type="button"
+              onClick={toggleAdminMode}
+              aria-pressed={isAdminMode}
+              title={isAdminMode ? 'Exit admin mode' : 'Enter admin mode — edit cells & tag publications to dossier sections'}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors',
+                isAdminMode
+                  ? 'text-white'
+                  : 'border border-serif-border bg-white text-serif-muted-foreground hover:text-serif-foreground',
+              )}
+              style={isAdminMode ? { backgroundColor: 'var(--evhub-navy)' } : undefined}
+            >
+              <Pencil size={13} className={isAdminMode ? 'text-[color:var(--evhub-mint)]' : undefined} />
+              <span>Admin</span>
+            </button>
+          )}
           {showSummarise && (
             <button
               type="button"
@@ -306,9 +358,6 @@ function LibraryPageInner() {
             onClick={() => setIsOpen(true)}
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90',
-              // When Summarise is visible we demote AskAI to an outlined
-              // secondary so the eye is drawn to the contextual primary
-              // action rather than the always-available chat opener.
               showSummarise
                 ? 'border border-[color:var(--evhub-navy)] bg-white text-[color:var(--evhub-navy)]'
                 : 'text-white',
@@ -347,14 +396,14 @@ function LibraryPageInner() {
         <DateChip
           icon={<CalendarClock size={12} />}
           label="Since last GVD"
-          count={DATE_THRESHOLD_COUNTS.SINCE_LAST_GVD}
+          count={dateCounts.SINCE_LAST_GVD}
           active={filterState.dateThreshold === 'SINCE_LAST_GVD'}
           onClick={() => toggleDateThreshold('SINCE_LAST_GVD')}
         />
         <DateChip
           icon={<Clock size={12} />}
           label="Last 3 months"
-          count={DATE_THRESHOLD_COUNTS.LAST_3_MONTHS}
+          count={dateCounts.LAST_3_MONTHS}
           active={filterState.dateThreshold === 'LAST_3_MONTHS'}
           onClick={() => toggleDateThreshold('LAST_3_MONTHS')}
         />
@@ -374,7 +423,7 @@ function LibraryPageInner() {
             className="w-full pl-9 pr-3 py-2 rounded-md border border-serif-border text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--evhub-mint)] focus:border-transparent"
           />
         </div>
-        <FilterToolbar state={filterState} onChange={setFilterState} />
+        <FilterToolbar state={filterState} onChange={setFilterState} tree={dataset.filterTree} />
       </div>
 
       <LibraryTable
@@ -383,7 +432,34 @@ function LibraryPageInner() {
         onToggleSelected={toggleSelected}
         onToggleAllOnPage={toggleAllOnPage}
         highlightedId={highlightedId}
+        dossierColumns={dossierColumns}
+        dossierSectionLookup={dossierSectionLookup}
+        isAdminMode={adminActive}
+        onEditField={updateArticleField}
+        onTagDossier={(article, dossierId) => {
+          const label = dossierColumns.find(c => c.id === dossierId)?.label ?? 'dossier';
+          setTagTarget({ article, dossierId, label });
+        }}
       />
+
+      {tagTarget && (
+        <DossierTagModal
+          article={{
+            id: tagTarget.article.id,
+            title: tagTarget.article.title ?? tagTarget.article.id,
+            number: getArticleNumber(tagTarget.article.id),
+          }}
+          dossierLabel={tagTarget.label}
+          sections={getDossierSections(tagTarget.dossierId)}
+          linkedSectionIds={linkedSectionIdsFor(tagTarget.dossierId, tagTarget.article.id)}
+          onSave={(added, removed) => {
+            for (const sid of added) linkArticle(tagTarget.dossierId, sid, tagTarget.article.id);
+            for (const sid of removed) unlinkArticle(tagTarget.dossierId, sid, tagTarget.article.id);
+            refreshDossierData();
+          }}
+          onClose={() => setTagTarget(null)}
+        />
+      )}
 
       <Pagination
         page={page}
@@ -397,10 +473,9 @@ function LibraryPageInner() {
 }
 
 /**
- * Date quick-action chip. Carries a static preview count (e.g. "86") that
- * doesn't change with other filters; click toggles the chip on/off and
- * applies the date filter. Styling matches the FilterDropdown active state
- * for visual consistency with the rest of the filter row.
+ * Date quick-action chip. Carries a preview count (e.g. "86") that doesn't
+ * change with other filters; click toggles the chip on/off and applies the
+ * date filter. Styling matches the FilterDropdown active state.
  */
 function DateChip({
   icon,

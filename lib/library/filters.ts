@@ -10,20 +10,32 @@ export const DATE_THRESHOLDS = {
 
 export type DateThresholdKey = keyof typeof DATE_THRESHOLDS;
 
+/** A pair of demo-time date thresholds — asset-scoped (Alnyx default below). */
+export type DateThresholds = Record<DateThresholdKey, string>;
+
 /**
- * Pre-computed article counts for each date threshold, evaluated against
- * the full ARTICLES list (ignoring other filters). These power the
- * "Since last GVD (86)" / "Last 3 months (12)" chip labels — static
- * previews of what the date filter alone would yield.
+ * Article counts for each date threshold, evaluated against the supplied
+ * article list (ignoring other filters). Powers the "Since last GVD (86)" /
+ * "Last 3 months (12)" chip labels. Asset-scoped so the iStent dataset (with
+ * its own thresholds + article set) gets its own preview counts.
  */
-export const DATE_THRESHOLD_COUNTS: Record<DateThresholdKey, number> = {
-  SINCE_LAST_GVD: ARTICLES.filter(
-    a => a.pub_date && a.pub_date >= DATE_THRESHOLDS.SINCE_LAST_GVD,
-  ).length,
-  LAST_3_MONTHS: ARTICLES.filter(
-    a => a.pub_date && a.pub_date >= DATE_THRESHOLDS.LAST_3_MONTHS,
-  ).length,
-};
+export function dateThresholdCounts(
+  articles: Article[],
+  thresholds: DateThresholds,
+): Record<DateThresholdKey, number> {
+  return {
+    SINCE_LAST_GVD: articles.filter(
+      a => a.pub_date && a.pub_date >= thresholds.SINCE_LAST_GVD,
+    ).length,
+    LAST_3_MONTHS: articles.filter(
+      a => a.pub_date && a.pub_date >= thresholds.LAST_3_MONTHS,
+    ).length,
+  };
+}
+
+/** Alnyx (default-asset) preview counts — preserved for existing consumers. */
+export const DATE_THRESHOLD_COUNTS: Record<DateThresholdKey, number> =
+  dateThresholdCounts(ARTICLES, DATE_THRESHOLDS);
 
 export interface FilterState {
   products: Set<string>;
@@ -33,6 +45,8 @@ export interface FilterState {
   studyTypes: Set<string>;
   geographies: Set<string>;
   sponsors: Set<string>;
+  /** iStent-only patient-funnel facet; stays empty (inert) for Alnyx. */
+  funnelLevels: Set<string>;
   categories: Set<string>;
   categoryParents: Set<string>;
   search: string;
@@ -48,6 +62,7 @@ export const EMPTY_FILTERS: FilterState = {
   studyTypes: new Set(),
   geographies: new Set(),
   sponsors: new Set(),
+  funnelLevels: new Set(),
   categories: new Set(),
   categoryParents: new Set(),
   search: '',
@@ -63,6 +78,7 @@ export function isFilterActive(s: FilterState): boolean {
     s.studyTypes.size > 0 ||
     s.geographies.size > 0 ||
     s.sponsors.size > 0 ||
+    s.funnelLevels.size > 0 ||
     s.categories.size > 0 ||
     s.categoryParents.size > 0 ||
     s.search.trim() !== '' ||
@@ -70,9 +86,13 @@ export function isFilterActive(s: FilterState): boolean {
   );
 }
 
-export function applyFilters(articles: Article[], s: FilterState): Article[] {
+export function applyFilters(
+  articles: Article[],
+  s: FilterState,
+  thresholds: DateThresholds = DATE_THRESHOLDS,
+): Article[] {
   const q = s.search.trim().toLowerCase();
-  const dateMin = s.dateThreshold ? DATE_THRESHOLDS[s.dateThreshold] : null;
+  const dateMin = s.dateThreshold ? thresholds[s.dateThreshold] : null;
 
   return articles.filter(a => {
     // Products: parent OR child match
@@ -86,6 +106,7 @@ export function applyFilters(articles: Article[], s: FilterState): Article[] {
     if (s.studyTypes.size > 0 && (!a.study_type || !s.studyTypes.has(a.study_type))) return false;
     if (s.geographies.size > 0 && (!a.geography || !s.geographies.has(a.geography))) return false;
     if (s.sponsors.size > 0 && (!a.sponsor || !s.sponsors.has(a.sponsor))) return false;
+    if (s.funnelLevels.size > 0 && (!a.funnel_level || !s.funnelLevels.has(a.funnel_level))) return false;
 
     if (s.categoryParents.size > 0 || s.categories.size > 0) {
       const matches = a.categories.some(c => {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import EvHubLogo from '@/components/brand/EvHubLogo';
+import AssetSwitcher from './AssetSwitcher';
 
 export default function TopBar() {
   return (
@@ -10,12 +11,15 @@ export default function TopBar() {
       <Link href="/" className="text-white">
         <EvHubLogo />
       </Link>
-      <div
-        className="flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold"
-        style={{ backgroundColor: 'rgba(175,169,236,0.35)', color: '#FFFFFF' }}
-        aria-label="User avatar"
-      >
-        J
+      <div className="flex items-center gap-4">
+        <AssetSwitcher />
+        <div
+          className="flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold"
+          style={{ backgroundColor: 'rgba(175,169,236,0.35)', color: '#FFFFFF' }}
+          aria-label="User avatar"
+        >
+          J
+        </div>
       </div>
     </header>
   );

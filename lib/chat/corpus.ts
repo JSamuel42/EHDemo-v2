@@ -1,4 +1,5 @@
 import libraryCorpus from '@/data/library/corpus.json';
+import { ISTENT_ARTICLES } from '@/lib/library/istent-data';
 import { GVD_CORPUS } from '@/lib/askgvd/data';
 import dochubCorpus from '@/data/dochub/corpus.json';
 import {
@@ -52,7 +53,19 @@ const LIBRARY_ENTRIES: CorpusEntry[] = Object.values(
   text: e.text,
 }));
 
-const ALL_ENTRIES: CorpusEntry[] = [...LIBRARY_ENTRIES];
+// iStent corpus: 22 Open-Angle Glaucoma publications grounded on their
+// abstracts. Keyed by Article ID (e.g. "Shan, 2024") — disjoint from the
+// Alnyx ids above, so they coexist in one id→entry map and AskAI resolves
+// whichever asset's rows are attached without special-casing.
+const ISTENT_ENTRIES: CorpusEntry[] = ISTENT_ARTICLES.map(a => ({
+  id: a.id,
+  moduleKey: 'library' as ModuleKey,
+  title: a.title ?? a.id,
+  subtitle: `${a.product_display} · ${a.indication ?? '—'} · ${a.pub_year ?? '—'}`,
+  text: a.abstract ?? '',
+}));
+
+const ALL_ENTRIES: CorpusEntry[] = [...LIBRARY_ENTRIES, ...ISTENT_ENTRIES];
 
 const ENTRIES_BY_ID: Record<string, CorpusEntry> = Object.fromEntries(
   ALL_ENTRIES.map(e => [e.id, e]),

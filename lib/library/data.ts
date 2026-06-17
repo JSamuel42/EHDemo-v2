@@ -28,6 +28,12 @@ export interface Article {
   value_message_link: string | null;
   objection_handler_link: string | null;
   abstract: string | null;
+  /** Patient-funnel position (L1–L5). iStent-only; absent on Alnyx records. */
+  funnel_level?: string | null;
+  /** Article theme grouping ('epi' | 'burden'). iStent-only. */
+  theme?: string | null;
+  /** PubMed ID. iStent-only; used for traceability + dossier linking. */
+  pmid?: string | null;
 }
 
 export interface FilterTree {
@@ -38,6 +44,8 @@ export interface FilterTree {
   geographies: string[];
   sponsors: string[];
   categories: { category: string; subcategories: string[] }[];
+  /** Optional funnel-level facet — present only for assets that use it (iStent). */
+  funnel_levels?: string[];
 }
 
 export const ARTICLES = articlesJson as unknown as Article[];
