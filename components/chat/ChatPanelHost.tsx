@@ -16,14 +16,19 @@ import ChatPanel from './ChatPanel';
  * panel's open/closed state persists across module navigations — once a user
  * opens the chat, it stays open as they move between modules.
  */
+const VALID_MODULE_KEYS = new Set<string>(MODULES.map(m => m.key));
+
+/**
+ * Derives the active module from a product-scoped path `/p/<product>/<slug>`.
+ * The slug segment is the module key. Returns null on landings (`/p/<product>`)
+ * and any non-module path, which hides the chat panel there.
+ */
 function moduleKeyFromPath(pathname: string | null): ModuleKey | null {
   if (!pathname) return null;
-  for (const m of MODULES) {
-    if (pathname === m.href || pathname.startsWith(m.href + '/')) {
-      return m.key;
-    }
-  }
-  return null;
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts[0] !== 'p' || parts.length < 3) return null;
+  const slug = parts[2];
+  return VALID_MODULE_KEYS.has(slug) ? (slug as ModuleKey) : null;
 }
 
 export default function ChatPanelHost() {

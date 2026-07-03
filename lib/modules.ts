@@ -4,6 +4,12 @@ import {
   Handshake, Users,
 } from 'lucide-react';
 
+// Legacy module metadata. Product/module *routing* is owned by
+// `lib/products/registry.ts` (the single source of truth for slugs, per-product
+// status and URLs via `moduleHref`). This file survives only as the key space
+// + display metadata for the chat subsystem (`ModuleKey`, MODULE_CHAT_CONFIG,
+// the landing card blurbs) — it deliberately carries NO route paths.
+
 export type ModuleGroup = 'core' | 'country-readiness' | 'evidence-synthesis';
 
 export interface ModuleGroupDef {
@@ -36,7 +42,6 @@ export interface ModuleDef {
   group: ModuleGroup;
   name: string;
   shortName: string;
-  href: string;
   icon: typeof FolderOpen;
   cardBlurb: string;
   cardCta: string;
@@ -48,52 +53,52 @@ export interface ModuleDef {
 export const MODULES: ModuleDef[] = [
   // Core
   { key: 'library', group: 'core', name: 'Library', shortName: 'Library',
-    href: '/library', icon: BookOpen,
+    icon: BookOpen,
     cardBlurb: 'Browse a comprehensive collection of available evidence.',
     cardCta: 'Discover Library' },
   { key: 'document-hub', group: 'core', name: 'Document Hub', shortName: 'DocHub',
-    href: '/document-hub', icon: FolderArchive,
+    icon: FolderArchive,
     cardBlurb: 'Quickly access global publication documents in one place.',
     cardCta: 'Browse Documents' },
   { key: 'projects', group: 'core', name: 'Projects', shortName: 'Projects',
-    href: '/projects', icon: FolderOpen,
+    icon: FolderOpen,
     cardBlurb: 'View timeline of key global and local evidence generation activities.',
     cardCta: 'Discover Projects' },
 
   // Country readiness
   { key: 'scientific-narrative', group: 'country-readiness', name: 'Scientific Narrative', shortName: 'Sci Narrative',
-    href: '/scientific-narrative', icon: FlaskConical,
+    icon: FlaskConical,
     cardBlurb: "Explore your product's Scientific Communication platform.",
     cardCta: 'Explore Narrative' },
   { key: 'payer-value-story', group: 'country-readiness', name: 'Payer Value Story', shortName: 'Value Story',
-    href: '/payer-value-story', icon: FileText,
+    icon: FileText,
     cardBlurb: 'Explore value narratives across key domains for your brand.',
     cardCta: 'Explore Insights' },
   { key: 'objection-handling', group: 'country-readiness', name: 'Objection Handling', shortName: 'Objections',
-    href: '/objection-handling', icon: MessageSquareWarning,
+    icon: MessageSquareWarning,
     cardBlurb: 'Field-ready responses to anticipated payer and HCP objections.',
     cardCta: 'Browse Objections' },
   { key: 'ask-gvd', group: 'country-readiness', name: 'Ask GVD', shortName: 'Ask GVD',
-    href: '/ask-gvd', icon: Brain,
+    icon: Brain,
     cardBlurb: 'Use AI to quickly search your GVD for brand-specific insights.',
     cardCta: 'Explore GVD' },
 
   // Evidence synthesis
   { key: 'comparative-data', group: 'evidence-synthesis', name: 'Comparative Data', shortName: 'Comparative',
-    href: '/comparative-data', icon: GitCompare,
+    icon: GitCompare,
     cardBlurb: 'Bespoke visualisations of evidence gaps, strengths, and opportunities vs competition.',
     cardCta: 'Compare Evidence' },
   { key: 'epidemiology', group: 'evidence-synthesis', name: 'Epidemiology', shortName: 'Epidemiology',
-    href: '/epidemiology', icon: BarChart3,
+    icon: BarChart3,
     cardBlurb: 'Explore patient funnels and target population estimates for key markets.',
     cardCta: 'Explore Patient Funnels' },
   { key: 'ai-mock-negotiations', group: 'evidence-synthesis', name: 'AI Mock Negotiations', shortName: 'Mock Negotiations',
-    href: '/ai-mock-negotiations', icon: Handshake,
+    icon: Handshake,
     cardBlurb: 'Simulate payer pressure. Strengthen value arguments. Improve negotiation readiness.',
     cardCta: 'Coming Soon',
     comingSoon: true },
   { key: 'synthetic-ad-boards', group: 'evidence-synthesis', name: 'Synthetic Ad-boards', shortName: 'Ad-boards',
-    href: '/synthetic-ad-boards', icon: Users,
+    icon: Users,
     cardBlurb: 'Test value hypotheses rapidly with AI-simulated HCP & Payer perspectives.',
     cardCta: 'Coming Soon',
     comingSoon: true },

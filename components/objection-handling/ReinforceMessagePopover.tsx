@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import * as Popover from '@radix-ui/react-popover';
 import { ArrowRight } from 'lucide-react';
 import { VALUE_MESSAGES, DOMAIN_BY_KEY, type ValueMessage } from '@/lib/value-story/data';
+import { useProduct } from '@/lib/products/context';
+import { moduleHref } from '@/lib/products/registry';
 
 interface Props {
   messageIds: string[];
@@ -20,6 +22,7 @@ interface Props {
  */
 export default function ReinforceMessagePopover({ messageIds, reinforceText }: Props) {
   const router = useRouter();
+  const { productId } = useProduct();
   const messages: ValueMessage[] = messageIds
     .map(id => VALUE_MESSAGES.find(m => m.id === id))
     .filter((m): m is ValueMessage => Boolean(m));
@@ -57,7 +60,7 @@ export default function ReinforceMessagePopover({ messageIds, reinforceText }: P
                   <p className="text-sm text-slate-700 leading-relaxed mb-3">{m.text}</p>
                   <button
                     type="button"
-                    onClick={() => router.push('/payer-value-story')}
+                    onClick={() => router.push(moduleHref(productId, 'payer-value-story'))}
                     className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
                     style={{ color: 'var(--evhub-navy)' }}
                   >

@@ -6,6 +6,8 @@ import {
   findPublicationsForMessage,
   type CitationModule,
 } from '@/lib/publications/citations';
+import { useProduct } from '@/lib/products/context';
+import { moduleHref } from '@/lib/products/registry';
 
 interface Props {
   module: CitationModule;
@@ -37,6 +39,7 @@ export function SupportingArticles({
   messageId,
   placeholderCount = 0,
 }: Props) {
+  const { productId } = useProduct();
   const pubs = findPublicationsForMessage(module, messageId);
   const totalSlots = Math.max(pubs.length, placeholderCount);
   if (totalSlots === 0) return null;
@@ -49,7 +52,7 @@ export function SupportingArticles({
           return (
             <li key={pub.id}>
               <Link
-                href={`/library?article=${encodeURIComponent(pub.id)}`}
+                href={`${moduleHref(productId, 'library')}?article=${encodeURIComponent(pub.id)}`}
                 title={pub.title}
                 className="group flex items-center gap-3 px-3 py-2.5 rounded-md border border-serif-border bg-white text-xs text-serif-foreground hover:border-[color:var(--evhub-mint)] hover:bg-[rgba(93,202,165,0.06)] transition-colors"
               >

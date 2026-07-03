@@ -1,72 +1,54 @@
 'use client';
 
+import { useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useProduct } from '@/lib/products/context';
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import {
-  ACTIVE_ASSET_DEFAULT,
-  ACTIVE_ASSET_STORAGE_KEY,
-  isAssetKey,
-  type AssetKey,
-} from '@/lib/assets';
+  getModuleStatus,
+  isModuleWired,
+  moduleHref,
+  productHref,
+  type ProductId,
+} from '@/lib/products/registry';
 
 /**
- * Active-asset context (Phase 0). Holds the asset the user is working in
- * (Alnyx ↔ iStent) and persists it to localStorage so the choice survives
- * navigation and reloads. This is the single source of truth the Library reads
- * to resolve its dataset + column config; Alnyx remains the default.
+ * Compatibility bridge over the URL-derived product context.
+ *
+ * The active asset is now the product taken from the URL (`/p/[product]`) — no
+ * longer localStorage-backed client state. This shim keeps existing consumers
+ * (the Library's dataset resolution, the TopBar switcher) working unchanged:
+ * `activeAsset` is the URL product, and `setActiveAsset` navigates. Switching
+ * stays on the current module when that module is live + wired for the target
+ * product; otherwise it lands on the target product's landing page.
  */
-interface ActiveAssetContextValue {
+export type AssetKey = ProductId;
+
+export function useActiveAsset(): {
   activeAsset: AssetKey;
   setActiveAsset: (key: AssetKey) => void;
-}
+} {
+  const { productId } = useProduct();
+  const router = useRouter();
+  const pathname = usePathname();
 
-const ActiveAssetContext = createContext<ActiveAssetContextValue | null>(null);
-
-export function ActiveAssetProvider({ children }: { children: React.ReactNode }) {
-  const [activeAsset, setActiveAssetState] = useState<AssetKey>(ACTIVE_ASSET_DEFAULT);
-
-  // Rehydrate the persisted selection on mount (client-only). Falls back to
-  // the default when absent or invalid.
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(ACTIVE_ASSET_STORAGE_KEY);
-      if (isAssetKey(stored)) setActiveAssetState(stored);
-    } catch {
-      /* localStorage unavailable — keep default */
-    }
-  }, []);
-
-  const setActiveAsset = useCallback((key: AssetKey) => {
-    setActiveAssetState(key);
-    try {
-      window.localStorage.setItem(ACTIVE_ASSET_STORAGE_KEY, key);
-    } catch {
-      /* swallow — selection still applies for the session */
-    }
-  }, []);
-
-  const value = useMemo<ActiveAssetContextValue>(
-    () => ({ activeAsset, setActiveAsset }),
-    [activeAsset, setActiveAsset],
+  const setActiveAsset = useCallback(
+    (key: AssetKey) => {
+      if (key === productId) return;
+      // pathname shape: /p/<product>/<slug>
+      const parts = (pathname ?? '').split('/').filter(Boolean);
+      const slug = parts[0] === 'p' ? parts[2] : undefined;
+      if (
+        slug &&
+        getModuleStatus(key, slug) === 'live' &&
+        isModuleWired(key, slug)
+      ) {
+        router.push(moduleHref(key, slug));
+      } else {
+        router.push(productHref(key));
+      }
+    },
+    [productId, pathname, router],
   );
 
-  return (
-    <ActiveAssetContext.Provider value={value}>
-      {children}
-    </ActiveAssetContext.Provider>
-  );
-}
-
-export function useActiveAsset(): ActiveAssetContextValue {
-  const ctx = useContext(ActiveAssetContext);
-  if (!ctx) {
-    throw new Error('useActiveAsset must be used within an ActiveAssetProvider');
-  }
-  return ctx;
+  return { activeAsset: productId, setActiveAsset };
 }

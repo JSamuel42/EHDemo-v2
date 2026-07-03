@@ -1,23 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import type { ModuleDef } from '@/lib/modules';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export default function SidebarNavItem({
-  module: m,
+  href,
+  label,
+  icon: Icon,
   active,
   collapsed,
 }: {
-  module: ModuleDef;
+  href: string;
+  label: string;
+  icon: LucideIcon;
   active: boolean;
   collapsed: boolean;
 }) {
-  const Icon = m.icon;
   return (
     <Link
-      href={m.href}
-      title={collapsed ? m.name : undefined}
+      href={href}
+      title={collapsed ? label : undefined}
       className={cn(
         'flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-md text-sm transition-colors',
         active
@@ -33,7 +36,7 @@ export default function SidebarNavItem({
       >
         <Icon size={18} />
       </span>
-      {!collapsed && <span className="truncate">{m.name}</span>}
+      {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   );
 }

@@ -2,14 +2,35 @@
 
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
-import { MODULE_GROUPS, getModulesByGroup } from '@/lib/modules';
+import {
+  getCategoriesForProduct,
+  moduleHref,
+} from '@/lib/products/registry';
+import { useProduct } from '@/lib/products/context';
 import { cn } from '@/lib/cn';
 import SidebarNavItem from './SidebarNavItem';
 import { useSidebar } from './SidebarContext';
 
+/** Two-letter avatar initials from the product name (e.g. Alnyx → AL). */
+function productInitials(name: string): string {
+  return name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebar();
+  const { productId, product } = useProduct();
+
+  // Nav shows a product's live modules only, grouped by category in fixed
+  // order; empty categories (e.g. Evidence Synthesis for Alnyx) are skipped.
+  const categories = getCategoriesForProduct(productId)
+    .map(c => ({
+      ...c,
+      modules: c.modules.filter(m => m.resolvedStatus === 'live'),
+    }))
+    .filter(c => c.modules.length > 0);
+
+  const initials = productInitials(product.name);
 
   return (
     <aside
@@ -29,9 +50,9 @@ export default function Sidebar() {
               className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold text-white"
               style={{ background: 'linear-gradient(135deg, var(--evhub-mint), var(--evhub-purple))' }}
             >
-              AL
+              {initials}
             </span>
-            <span className="font-playfair text-base text-serif-foreground">Alnyx</span>
+            <span className="font-playfair text-base text-serif-foreground">{product.name}</span>
             <ChevronDown size={14} className="text-serif-muted-foreground" />
           </button>
         )}
@@ -40,7 +61,7 @@ export default function Sidebar() {
             className="flex items-center justify-center w-8 h-8 mx-auto rounded-full text-xs font-semibold text-white"
             style={{ background: 'linear-gradient(135deg, var(--evhub-mint), var(--evhub-purple))' }}
           >
-            AL
+            {initials}
           </span>
         )}
         <button
@@ -54,34 +75,36 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-1">
-        {MODULE_GROUPS.map((group, idx) => {
-          // Hide coming-soon items from the side nav — they live on the
-          // landing page only until their routes are built out.
-          const modules = getModulesByGroup(group.key).filter(m => !m.comingSoon);
-          return (
-            <div key={group.key}>
-              {idx > 0 && <hr className="my-2 border-t border-serif-border" />}
-              {!collapsed && (
-                <div
-                  className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-[0.16em] font-semibold"
-                  style={{ color: 'var(--evhub-navy)' }}
-                >
-                  {group.label}
-                </div>
-              )}
-              <ul>
-                {modules.map(m => {
-                  const active = pathname === m.href || pathname?.startsWith(m.href + '/');
-                  return (
-                    <li key={m.key}>
-                      <SidebarNavItem module={m} active={!!active} collapsed={collapsed} />
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          );
-        })}
+        {categories.map(({ category, modules }, idx) => (
+          <div key={category.id}>
+            {idx > 0 && <hr className="my-2 border-t border-serif-border" />}
+            {!collapsed && (
+              <div
+                className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-[0.16em] font-semibold"
+                style={{ color: 'var(--evhub-navy)' }}
+              >
+                {category.label}
+              </div>
+            )}
+            <ul>
+              {modules.map(m => {
+                const href = moduleHref(productId, m.slug);
+                const active = pathname === href || pathname?.startsWith(href + '/');
+                return (
+                  <li key={m.id}>
+                    <SidebarNavItem
+                      href={href}
+                      label={m.label}
+                      icon={m.icon}
+                      active={!!active}
+                      collapsed={collapsed}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
     </aside>
   );
