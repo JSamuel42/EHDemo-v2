@@ -71,14 +71,16 @@ export const PRODUCTS: Record<ProductId, ProductDef> = {
 export interface CategoryDef {
   id: CategoryId;
   label: string;
+  /** Short muted descriptor shown on the landing page category header. */
+  description: string;
 }
 
 /** Categories in fixed display order. */
 export const CATEGORIES: CategoryDef[] = [
-  { id: 'evidence-layer', label: 'Evidence Layer' },
-  { id: 'core-readiness', label: 'Core Readiness Pack' },
-  { id: 'evidence-synthesis', label: 'Evidence Synthesis' },
-  { id: 'custom-applications', label: 'Custom Applications' },
+  { id: 'evidence-layer', label: 'Evidence Layer', description: 'Curated evidence foundation' },
+  { id: 'core-readiness', label: 'Core Readiness Pack', description: 'Market-ready value assets' },
+  { id: 'evidence-synthesis', label: 'Evidence Synthesis', description: 'Reviews and dossier drafting' },
+  { id: 'custom-applications', label: 'Custom Applications', description: 'Advanced and emerging tools' },
 ];
 
 export interface ModuleDef {
@@ -89,6 +91,8 @@ export interface ModuleDef {
   /** URL segment under /p/[product]/. */
   slug: string;
   icon: LucideIcon;
+  /** One-line landing-card descriptor. */
+  blurb: string;
   /** Per-product design-intent status. */
   status: Record<ProductId, ModuleStatus>;
 }
@@ -101,6 +105,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'evidence-layer',
     slug: 'library',
     icon: BookOpen,
+    blurb: 'Searchable evidence base',
     status: { alnyx: 'live', istent: 'live' },
   },
   {
@@ -109,6 +114,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'evidence-layer',
     slug: 'document-hub',
     icon: Files,
+    blurb: 'Source document discovery',
     status: { alnyx: 'live', istent: 'coming-soon' },
   },
   {
@@ -117,6 +123,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'evidence-layer',
     slug: 'projects',
     icon: CalendarRange,
+    blurb: 'Evidence generation timeline',
     status: { alnyx: 'live', istent: 'coming-soon' },
   },
 
@@ -127,6 +134,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'core-readiness',
     slug: 'scientific-narrative',
     icon: ScrollText,
+    blurb: 'Structured scientific story',
     status: { alnyx: 'live', istent: 'live' },
   },
   {
@@ -135,6 +143,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'core-readiness',
     slug: 'payer-value-story',
     icon: MessageSquareQuote,
+    blurb: 'Payer-facing value messages',
     status: { alnyx: 'live', istent: 'live' },
   },
   {
@@ -143,6 +152,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'core-readiness',
     slug: 'objection-handling',
     icon: ShieldQuestion,
+    blurb: 'Rebuttals and handlers',
     status: { alnyx: 'live', istent: 'coming-soon' },
   },
   {
@@ -151,6 +161,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'core-readiness',
     slug: 'ask-gvd',
     icon: FileSearch,
+    blurb: 'Query the dossier',
     status: { alnyx: 'live', istent: 'coming-soon' },
   },
 
@@ -161,6 +172,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'evidence-synthesis',
     slug: 'literature-reviews',
     icon: ListFilter,
+    blurb: 'AI-assisted screening',
     status: { alnyx: 'coming-soon', istent: 'live' },
   },
   {
@@ -169,6 +181,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'evidence-synthesis',
     slug: 'dossier-builder',
     icon: FileStack,
+    blurb: 'AI-drafted GVD sections',
     status: { alnyx: 'coming-soon', istent: 'live' },
   },
 
@@ -179,6 +192,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'custom-applications',
     slug: 'comparative-data',
     icon: GitCompare,
+    blurb: 'Competitive benchmarking',
     status: { alnyx: 'live', istent: 'coming-soon' },
   },
   {
@@ -187,6 +201,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'custom-applications',
     slug: 'epidemiology',
     icon: Users,
+    blurb: 'Patient population funnels',
     status: { alnyx: 'live', istent: 'live' },
   },
   {
@@ -195,6 +210,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'custom-applications',
     slug: 'ai-mock-negotiations',
     icon: Handshake,
+    blurb: 'Simulated payer negotiations',
     status: { alnyx: 'coming-soon', istent: 'coming-soon' },
   },
   {
@@ -203,6 +219,7 @@ export const MODULES: ModuleDef[] = [
     categoryId: 'custom-applications',
     slug: 'synthetic-adboards',
     icon: Presentation,
+    blurb: 'Virtual advisory boards',
     status: { alnyx: 'coming-soon', istent: 'coming-soon' },
   },
 ];
@@ -259,6 +276,27 @@ export function moduleHref(productId: ProductId, slug: string): string {
 /** Landing URL for a product. */
 export function productHref(productId: ProductId): string {
   return `/p/${productId}`;
+}
+
+/**
+ * Resolves the destination for a product switch made from `pathname`: the
+ * same module (by slug) when it's `live` for the target product, otherwise
+ * the target product's landing. Deliberately ignores `wired` — a live-but-
+ * unwired module still renders the graceful in-progress placeholder rather
+ * than a dead end, so landing there is a reasonable switch target. The one
+ * place this logic lives, shared by the shell's product switcher and any
+ * other in-app product-switch affordance.
+ */
+export function resolveProductSwitchHref(
+  pathname: string | null,
+  targetProductId: ProductId,
+): string {
+  const parts = (pathname ?? '').split('/').filter(Boolean);
+  const slug = parts[0] === 'p' ? parts[2] : undefined;
+  if (slug && getModuleStatus(targetProductId, slug) === 'live') {
+    return moduleHref(targetProductId, slug);
+  }
+  return productHref(targetProductId);
 }
 
 export interface ResolvedModule extends ModuleDef {

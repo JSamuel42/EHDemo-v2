@@ -183,6 +183,18 @@ a {
   margin-bottom: 0.875rem;
 }
 
+/* ─── Product landing — live module card ─────────────────────────────────────
+   Accent comes from the scoped --product-accent var (set by ProductProvider),
+   so switching products re-tints hover/focus without any component change.  */
+.eh-live-card:hover {
+  border-color: var(--product-accent);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.06);
+}
+.eh-live-card:focus-visible {
+  outline: 2px solid var(--product-accent);
+  outline-offset: 2px;
+}
+
 /* ─── Chat panel "thinking" dot ─────────────────────────────────────────────
    Used next to the chat panel title to indicate AI in-flight state. Static
    teal dot when idle; gentle scale + opacity pulse while streaming.            */

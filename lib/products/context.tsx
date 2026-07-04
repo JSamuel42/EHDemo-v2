@@ -34,8 +34,19 @@ export function ProductProvider({
     return { productId, product, accentToken: product.accentToken };
   }, [productId]);
 
+  // Scoped CSS var — the single place the active product's accent enters
+  // styling. `display: contents` keeps this wrapper out of the box tree
+  // (custom properties still cascade to descendants regardless of display)
+  // so it can't affect the shell's fixed/flex layout underneath.
+  const accentVarStyle = {
+    display: 'contents',
+    '--product-accent': value.accentToken,
+  } as React.CSSProperties;
+
   return (
-    <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
+    <ProductContext.Provider value={value}>
+      <div style={accentVarStyle}>{children}</div>
+    </ProductContext.Provider>
   );
 }
 

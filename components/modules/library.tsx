@@ -13,7 +13,7 @@ import {
   type DateThresholdKey,
 } from '@/lib/library/filters';
 import { LIBRARY_DATASETS } from '@/lib/library/datasets';
-import { useActiveAsset } from '@/components/layout/ActiveAssetContext';
+import { useProduct } from '@/lib/products/context';
 import { useLibraryStore } from '@/lib/library/istent-store';
 import { useAdminMode } from '@/lib/admin/AdminModeContext';
 import {
@@ -81,7 +81,7 @@ export default function LibraryPage() {
 
 function LibraryPageInner() {
   // Active asset drives dataset, filter tree, presets and dossier features.
-  const { activeAsset } = useActiveAsset();
+  const { productId: activeAsset } = useProduct();
   const dataset = LIBRARY_DATASETS[activeAsset];
   const isIstent = dataset.hasDossiers;
 
