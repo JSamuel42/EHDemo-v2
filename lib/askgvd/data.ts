@@ -1,6 +1,7 @@
 import corpusJson from '@/data/askgvd/corpus.json';
 import navJson from '@/data/askgvd/nav.json';
 import suggestedJson from '@/data/askgvd/suggested-questions.json';
+import type { ProductId } from '@/lib/products/registry';
 
 export interface GvdSection {
   number: string;
@@ -35,13 +36,38 @@ export interface GvdSuggestedQuestion {
   text: string;
 }
 
-export const GVD_CORPUS = corpusJson as unknown as GvdCorpus;
-export const GVD_NAV = navJson as unknown as GvdNav;
-export const GVD_SUGGESTED_QUESTIONS = suggestedJson as unknown as GvdSuggestedQuestion[];
+const ALNYX_CORPUS = corpusJson as unknown as GvdCorpus;
+const ALNYX_NAV = navJson as unknown as GvdNav;
+const ALNYX_SUGGESTED_QUESTIONS = suggestedJson as unknown as GvdSuggestedQuestion[];
 
-export const GVD_SECTIONS_BY_NUMBER: Record<string, GvdSection> = Object.fromEntries(
-  GVD_CORPUS.sections.map(s => [s.number, s]),
-);
+/** Product-keyed GVD data. Only `alnyx` is populated — AskGVD is
+ *  `coming-soon` for iStent and gets an entry here when it's ported. */
+const CORPUS_BY_PRODUCT: Partial<Record<ProductId, GvdCorpus>> = { alnyx: ALNYX_CORPUS };
+const NAV_BY_PRODUCT: Partial<Record<ProductId, GvdNav>> = { alnyx: ALNYX_NAV };
+const SUGGESTED_QUESTIONS_BY_PRODUCT: Partial<Record<ProductId, GvdSuggestedQuestion[]>> = {
+  alnyx: ALNYX_SUGGESTED_QUESTIONS,
+};
+
+export function getGvdCorpus(productId: ProductId): GvdCorpus {
+  return CORPUS_BY_PRODUCT[productId] ?? ALNYX_CORPUS;
+}
+export function getGvdNav(productId: ProductId): GvdNav {
+  return NAV_BY_PRODUCT[productId] ?? ALNYX_NAV;
+}
+export function getGvdSuggestedQuestions(productId: ProductId): GvdSuggestedQuestion[] {
+  return SUGGESTED_QUESTIONS_BY_PRODUCT[productId] ?? ALNYX_SUGGESTED_QUESTIONS;
+}
+export function getSectionsByNumber(productId: ProductId): Record<string, GvdSection> {
+  return Object.fromEntries(getGvdCorpus(productId).sections.map(s => [s.number, s]));
+}
+
+// Flat Alnyx-scoped exports — unchanged values, kept for existing consumers
+// (ChatPanel's suggestedQuestionsByCategory below) that are Alnyx-only today.
+// The AskGVD module page resolves via the product-keyed getters above.
+export const GVD_CORPUS = ALNYX_CORPUS;
+export const GVD_NAV = ALNYX_NAV;
+export const GVD_SUGGESTED_QUESTIONS = ALNYX_SUGGESTED_QUESTIONS;
+export const GVD_SECTIONS_BY_NUMBER = getSectionsByNumber('alnyx');
 
 /** All sections belonging to a chapter (by chapter number, e.g. "5"). */
 export function getSectionsForChapter(chapterNumber: string): GvdSection[] {

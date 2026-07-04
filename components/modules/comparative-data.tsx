@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { ALL_PRODUCTS } from '@/lib/comparative-data/data';
+import { getAllProducts } from '@/lib/comparative-data/data';
+import { useProduct } from '@/lib/products/context';
 import OverviewTab from '@/components/comparative-data/OverviewTab';
 import EvidenceGridTab from '@/components/comparative-data/EvidenceGridTab';
 import TimelinesTab from '@/components/comparative-data/TimelinesTab';
@@ -20,6 +21,9 @@ const INDICATION_OPTIONS = [
 ];
 
 export default function ComparativeDataPage() {
+  const { productId } = useProduct();
+  const ALL_PRODUCTS = getAllProducts(productId);
+
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [indicationId, setIndicationId] = useState<string>('4l-mm-tce');
   const [indicationOpen, setIndicationOpen] = useState(false);

@@ -1,4 +1,5 @@
 import documentsJson from '@/data/dochub/documents.json';
+import type { ProductId } from '@/lib/products/registry';
 
 export interface DocHubDocument {
   id: string;
@@ -34,8 +35,23 @@ interface DocHubData {
   groups: DocHubGroup[];
 }
 
-export const DOCHUB_DATA = documentsJson as unknown as DocHubData;
+const ALNYX_DOCHUB_DATA = documentsJson as unknown as DocHubData;
 
-export const DOCHUB_BY_ID: Record<string, DocHubDocument> = Object.fromEntries(
-  DOCHUB_DATA.documents.map(d => [d.id, d]),
-);
+/** Product-keyed Document Hub data. Only `alnyx` is populated — Document Hub
+ *  is `coming-soon` for iStent and gets an entry here when it's ported. */
+const DOCHUB_DATA_BY_PRODUCT: Partial<Record<ProductId, DocHubData>> = {
+  alnyx: ALNYX_DOCHUB_DATA,
+};
+
+export function getDochubData(productId: ProductId): DocHubData {
+  return DOCHUB_DATA_BY_PRODUCT[productId] ?? ALNYX_DOCHUB_DATA;
+}
+export function getDochubById(productId: ProductId): Record<string, DocHubDocument> {
+  return Object.fromEntries(getDochubData(productId).documents.map(d => [d.id, d]));
+}
+
+// Flat Alnyx-scoped exports — unchanged values. Document Hub's own module
+// page resolves via the product-keyed getters above.
+export const DOCHUB_DATA = ALNYX_DOCHUB_DATA;
+
+export const DOCHUB_BY_ID: Record<string, DocHubDocument> = getDochubById('alnyx');

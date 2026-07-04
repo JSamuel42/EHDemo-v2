@@ -1,13 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { GVD_NAV, GVD_SECTIONS_BY_NUMBER } from '@/lib/askgvd/data';
+import {
+  getGvdNav,
+  getSectionsByNumber,
+  type GvdNav,
+  type GvdSection,
+} from '@/lib/askgvd/data';
 import {
   GVD_DOCUMENTS,
   DEFAULT_DOCUMENT_ID,
   getDocumentById,
 } from '@/lib/askgvd/documents';
 import { useChatPanel } from '@/components/chat/ChatPanelContext';
+import { useProduct } from '@/lib/products/context';
 import ChapterNav from '@/components/askgvd/ChapterNav';
 import DocumentSelector from '@/components/askgvd/DocumentSelector';
 import PdfViewer from '@/components/askgvd/PdfViewer';
@@ -32,12 +38,16 @@ interface CitationFlash {
 /** Best-effort title lookup for a cited section number. Tries the corpus
  *  section map first, then the chapter list, then sub-section lookups in
  *  nav. Falls back to a generic label if nothing matches. */
-function lookupSectionTitle(section: string): string {
-  const sec = GVD_SECTIONS_BY_NUMBER[section];
+function lookupSectionTitle(
+  section: string,
+  nav: GvdNav,
+  sectionsByNumber: Record<string, GvdSection>,
+): string {
+  const sec = sectionsByNumber[section];
   if (sec?.title) return sec.title;
-  const chap = GVD_NAV.chapters.find(c => c.number === section);
+  const chap = nav.chapters.find(c => c.number === section);
   if (chap?.title) return chap.title;
-  for (const ch of GVD_NAV.chapters) {
+  for (const ch of nav.chapters) {
     const s = ch.sections.find(s => s.number === section);
     if (s?.title) return s.title;
   }
@@ -45,6 +55,10 @@ function lookupSectionTitle(section: string): string {
 }
 
 export default function AskGvdPage() {
+  const { productId } = useProduct();
+  const GVD_NAV = getGvdNav(productId);
+  const GVD_SECTIONS_BY_NUMBER = getSectionsByNumber(productId);
+
   const [activeDocumentId, setActiveDocumentId] = useState(DEFAULT_DOCUMENT_ID);
   const [activeChapter, setActiveChapter] = useState('1');
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -72,12 +86,12 @@ export default function AskGvdPage() {
     setCitationFlash({
       section,
       page,
-      title: lookupSectionTitle(section),
+      title: lookupSectionTitle(section, GVD_NAV, GVD_SECTIONS_BY_NUMBER),
       key: Date.now(),
     });
     if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
     flashTimerRef.current = setTimeout(() => setCitationFlash(null), FLASH_MS);
-  }, []);
+  }, [GVD_NAV, GVD_SECTIONS_BY_NUMBER]);
 
   useEffect(() => {
     setOnCitationClick(handleCitationClick);

@@ -3,17 +3,22 @@
 import { useState, useMemo } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Sparkles, Search } from 'lucide-react';
-import { DOCHUB_DATA, DOCHUB_BY_ID } from '@/lib/dochub/data';
+import { getDochubData, getDochubById } from '@/lib/dochub/data';
 import {
   EMPTY_DOCHUB_FILTERS,
   applyDocHubFilters,
   type DocHubFilterState,
 } from '@/lib/dochub/filters';
 import { useChatPanel } from '@/components/chat/ChatPanelContext';
+import { useProduct } from '@/lib/products/context';
 import FilterRail from '@/components/dochub/FilterRail';
 import DocumentGroup from '@/components/dochub/DocumentGroup';
 
 export default function DocumentHubPage() {
+  const { productId } = useProduct();
+  const DOCHUB_DATA = getDochubData(productId);
+  const DOCHUB_BY_ID = getDochubById(productId);
+
   const [filterState, setFilterState] = useState<DocHubFilterState>(EMPTY_DOCHUB_FILTERS);
   const [search, setSearch] = useState('');
   const { setIsOpen } = useChatPanel();
@@ -28,7 +33,7 @@ export default function DocumentHubPage() {
       const hay = `${d.title} ${d.description ?? ''} ${d.agency ?? ''}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [filterState, search]);
+  }, [DOCHUB_DATA, filterState, search]);
 
   const filteredIdSet = useMemo(() => new Set(filteredDocs.map(d => d.id)), [filteredDocs]);
 
@@ -41,7 +46,7 @@ export default function DocumentHubPage() {
         doc_ids: g.doc_ids.filter(id => filteredIdSet.has(id)),
       }))
       .filter(g => g.doc_ids.length > 0);
-  }, [filteredIdSet]);
+  }, [DOCHUB_DATA, filteredIdSet]);
 
   const total = DOCHUB_DATA.documents.length;
   const visibleCount = filteredDocs.length;

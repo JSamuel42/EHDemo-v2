@@ -1,6 +1,7 @@
 import nuroJson from '@/data/comparative-data/products-nuro.json'
 import { ALNYX_DATA } from './alnyx-data'
 import type { ProductEntry, RegulatoryApproval, HtaOutcome, PivotalStudy } from './types'
+import type { ProductId } from '@/lib/products/registry'
 
 interface NuroIngestionOutput {
   ingestedAt: string
@@ -25,7 +26,7 @@ const MODALITY_MAP: Record<string, 'bispecific' | 'car-t' | 'adc'> = {
   Blenrep: 'adc',
 }
 
-export const ALL_PRODUCTS: ProductEntry[] = [
+const ALNYX_ALL_PRODUCTS: ProductEntry[] = [
   ...nuroData.products.map((p) => ({
     brandName: p.brandName,
     isFictional: false,
@@ -44,6 +45,22 @@ export const ALL_PRODUCTS: ProductEntry[] = [
     alnyxData: ALNYX_DATA,
   },
 ]
+
+/** Product-keyed competitive-landscape product lists. Only `alnyx` is
+ *  populated — Comparative Data is `coming-soon` for iStent. */
+const ALL_PRODUCTS_BY_PRODUCT: Partial<Record<ProductId, ProductEntry[]>> = {
+  alnyx: ALNYX_ALL_PRODUCTS,
+}
+
+export function getAllProducts(productId: ProductId): ProductEntry[] {
+  return ALL_PRODUCTS_BY_PRODUCT[productId] ?? ALNYX_ALL_PRODUCTS
+}
+
+// Flat Alnyx-scoped exports — unchanged values, kept for existing consumers
+// (EvidenceSpiderChart, ProductTimeline, EvidenceGridTab, HtaOutcomesTable,
+// StageMilestones, lib/chat/corpus.ts) that are Alnyx-only today. The
+// Comparative Data module page resolves via getAllProducts above.
+export const ALL_PRODUCTS: ProductEntry[] = ALNYX_ALL_PRODUCTS
 
 export const PRODUCT_BY_NAME: Record<string, ProductEntry> = Object.fromEntries(
   ALL_PRODUCTS.map((p) => [p.brandName, p]),
