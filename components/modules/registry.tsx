@@ -10,6 +10,7 @@ import ObjectionHandlingModule from './objection-handling';
 import AskGvdModule from './ask-gvd';
 import ComparativeDataModule from './comparative-data';
 import EpidemiologyModule from './epidemiology';
+import LiteratureReviewsModule from './literature-reviews';
 
 /**
  * Maps a module slug to the client component that renders it. Only wired
@@ -28,6 +29,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'ask-gvd': AskGvdModule,
   'comparative-data': ComparativeDataModule,
   epidemiology: EpidemiologyModule,
+  'literature-reviews': LiteratureReviewsModule,
 };
 
 export function ModuleHost({ slug }: { slug: string }) {

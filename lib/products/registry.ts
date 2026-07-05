@@ -231,14 +231,15 @@ export const MODULES: ModuleDef[] = [
  *
  * • alnyx  — every Alnyx module whose status is 'live' (all ported).
  * • istent — Library (dataset + dossier columns + admin tagging shipped in
- *            Phase 1) and Epidemiology (namespaced Glaukos OAG funnels,
- *            Prompt 3a). Later prompts add more slugs here.
+ *            Phase 1), Epidemiology (namespaced Glaukos OAG funnels,
+ *            Prompt 3a), and Literature Reviews (static Lit Search demo,
+ *            Prompt 3b). Later prompts add more slugs here.
  */
 export const WIRED: Record<ProductId, Set<string>> = {
   alnyx: new Set(
     MODULES.filter(m => m.status.alnyx === 'live').map(m => m.slug),
   ),
-  istent: new Set<string>(['library', 'epidemiology']),
+  istent: new Set<string>(['library', 'epidemiology', 'literature-reviews']),
 };
 
 // ── Lookups + helpers ─────────────────────────────────────────────
