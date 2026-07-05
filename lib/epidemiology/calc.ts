@@ -9,9 +9,16 @@ export interface ComputedLevel extends FunnelLevel {
  * Cascade a funnel's percentages down from its top-level absolute,
  * optionally substituting user-edited percentages from `overrides`.
  * Recomputed on every render in the workspace so % edits feel live.
+ *
+ * Parameter is narrowed to just the fields this function reads (not the full
+ * `Funnel` shape) so it also accepts the iStent variant's structurally
+ * identical but nominally distinct `Funnel`/`FunnelLevel` types (their
+ * `Country` unions differ, which otherwise trips a structural mismatch on a
+ * field this function never touches) — shared by both product variants
+ * rather than forked, since the cascade logic itself is product-agnostic.
  */
 export function computeFunnel(
-  funnel: Funnel,
+  funnel: Pick<Funnel, 'topLevelAbsolute' | 'levels'>,
   overrides?: Record<string, number>,
 ): ComputedLevel[] {
   const result: ComputedLevel[] = [];
