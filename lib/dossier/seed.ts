@@ -15,7 +15,7 @@ import {
   GLAUCOMA_DOSSIER_SEEDS,
   GLAUCOMA_DOSSIER_ID,
   GLAUCOMA_DOSSIER_CONTEXT,
-} from '@/data/demo/istentDossier';
+} from '@/data/istent/demo/glaucomaDossier';
 
 /** localStorage key for a dossier's writing context (Context Manager). */
 export function contextKey(dossierId: string): string {

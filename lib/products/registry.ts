@@ -233,9 +233,11 @@ export const MODULES: ModuleDef[] = [
  * • istent — Library (dataset + dossier columns + admin tagging shipped in
  *            Phase 1), Epidemiology (namespaced Glaukos OAG funnels,
  *            Prompt 3a), Literature Reviews (static Lit Search demo,
- *            Prompt 3b), and Scientific Narrative + Payer Value Story
+ *            Prompt 3b), Scientific Narrative + Payer Value Story
  *            (namespaced Glaukos OAG content + product-aware chat corpus,
- *            Prompt 4). Later prompts add more slugs here.
+ *            Prompt 4), and Dossier Builder (TipTap editor + AI drafting,
+ *            Prompt 5 — the last content module). Later prompts are
+ *            typography-only.
  */
 export const WIRED: Record<ProductId, Set<string>> = {
   alnyx: new Set(
@@ -247,6 +249,7 @@ export const WIRED: Record<ProductId, Set<string>> = {
     'literature-reviews',
     'scientific-narrative',
     'payer-value-story',
+    'dossier-builder',
   ]),
 };
 

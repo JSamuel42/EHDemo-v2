@@ -11,6 +11,7 @@ import AskGvdModule from './ask-gvd';
 import ComparativeDataModule from './comparative-data';
 import EpidemiologyModule from './epidemiology';
 import LiteratureReviewsModule from './literature-reviews';
+import DossierBuilderModule from './dossier-builder';
 
 /**
  * Maps a module slug to the client component that renders it. Only wired
@@ -30,6 +31,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'comparative-data': ComparativeDataModule,
   epidemiology: EpidemiologyModule,
   'literature-reviews': LiteratureReviewsModule,
+  'dossier-builder': DossierBuilderModule,
 };
 
 export function ModuleHost({ slug }: { slug: string }) {
