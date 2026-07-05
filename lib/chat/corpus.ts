@@ -23,7 +23,17 @@ import {
   PILLARS,
   SCIENTIFIC_STATEMENTS,
 } from '@/lib/scientific-narrative/data';
+import {
+  PILLARS as ISTENT_PILLARS,
+  SCIENTIFIC_STATEMENTS as ISTENT_SCIENTIFIC_STATEMENTS,
+} from '@/lib/scientific-narrative/istent-data';
+import {
+  DOMAINS as ISTENT_DOMAINS,
+  VALUE_MESSAGES as ISTENT_VALUE_MESSAGES,
+  OVERARCHING_MESSAGE as ISTENT_OVERARCHING_MESSAGE,
+} from '@/lib/value-story/istent-data';
 import type { ModuleKey } from '@/lib/modules';
+import type { ProductId } from '@/lib/products/registry';
 
 export interface CorpusEntry {
   id: string;
@@ -83,7 +93,7 @@ export function getCorpusEntries(ids: string[]): CorpusEntry[] {
  * document) rather than a per-row selection. Returns null when the module
  * has no whole-corpus mode.
  */
-export function getModuleCorpus(moduleKey: ModuleKey): string | null {
+export function getModuleCorpus(moduleKey: ModuleKey, productId: ProductId): string | null {
   if (moduleKey === 'ask-gvd') {
     return buildGvdCorpusText();
   }
@@ -91,7 +101,7 @@ export function getModuleCorpus(moduleKey: ModuleKey): string | null {
     return buildDocHubCorpusText();
   }
   if (moduleKey === 'payer-value-story') {
-    return buildValueStoryCorpusText();
+    return buildValueStoryCorpusText(productId);
   }
   if (moduleKey === 'objection-handling') {
     return buildObjectionHandlingCorpusText();
@@ -100,7 +110,7 @@ export function getModuleCorpus(moduleKey: ModuleKey): string | null {
     return buildComparativeDataCorpusText();
   }
   if (moduleKey === 'scientific-narrative') {
-    return buildScientificNarrativeCorpusText();
+    return buildScientificNarrativeCorpusText(productId);
   }
   return null;
 }
@@ -110,17 +120,27 @@ export function getModuleCorpus(moduleKey: ModuleKey): string | null {
  * for the triage chat. Tiny — ~4-6k tokens — so the whole thing rides in
  * the system prompt every turn. Each statement is bolded by its ID so
  * the model can mirror the **S7** citation format easily.
+ *
+ * Product-keyed: Alnyx (R/R MM) and iStent (Open-Angle Glaucoma) each have
+ * their own pillars/statements, selected by `productId`. Alnyx branch output
+ * is unchanged from before this became product-aware.
  */
-function buildScientificNarrativeCorpusText(): string {
-  const parts: string[] = ['# Alnyx Scientific Narrative Corpus — R/R MM', ''];
+function buildScientificNarrativeCorpusText(productId: ProductId): string {
+  const isIstent = productId === 'istent';
+  const pillars = isIstent ? ISTENT_PILLARS : PILLARS;
+  const statements = isIstent ? ISTENT_SCIENTIFIC_STATEMENTS : SCIENTIFIC_STATEMENTS;
+  const heading = isIstent
+    ? '# iStent infinite Scientific Narrative Corpus — Open-Angle Glaucoma'
+    : '# Alnyx Scientific Narrative Corpus — R/R MM';
+  const parts: string[] = [heading, ''];
 
-  for (const pillar of PILLARS) {
+  for (const pillar of pillars) {
     parts.push(`## Pillar ${pillar.number}: ${pillar.fullName}`);
     parts.push(`Strategic Imperative & Objective: ${pillar.strategicImperative}`);
     parts.push(`Scientific Position: ${pillar.scientificPosition}`);
     parts.push('Statements:');
-    const statements = SCIENTIFIC_STATEMENTS.filter(s => s.pillar === pillar.key);
-    for (const s of statements) {
+    const pillarStatements = statements.filter(s => s.pillar === pillar.key);
+    for (const s of pillarStatements) {
       parts.push(`  - **${s.id}**: ${s.text}`);
     }
     parts.push('');
@@ -346,23 +366,37 @@ function buildObjectionHandlingCorpusText(): string {
 }
 
 /**
- * Packs the 18 Value Story messages (across 4 domains) into a markdown
- * corpus for the triage chat. Tiny — ~3-5k tokens — so the whole thing
- * sits in the system prompt every turn. Each message is bolded by its
- * ID so the model can mirror the **C2** citation format easily.
+ * Packs the Value Story messages (across 4 domains) into a markdown corpus
+ * for the triage chat. Tiny — ~3-5k tokens — so the whole thing sits in the
+ * system prompt every turn. Each message is bolded by its ID so the model
+ * can mirror the **C2** citation format easily.
+ *
+ * Product-keyed: Alnyx (18 R/R MM messages) and iStent (13 Open-Angle
+ * Glaucoma messages, each with a headline) each have their own domains,
+ * selected by `productId`. Alnyx branch output is unchanged from before
+ * this became product-aware.
  */
-function buildValueStoryCorpusText(): string {
-  const parts: string[] = ['# Alnyx (alphabetinib) Value Story — R/R MM', ''];
+function buildValueStoryCorpusText(productId: ProductId): string {
+  const isIstent = productId === 'istent';
+  const domains = isIstent ? ISTENT_DOMAINS : DOMAINS;
+  const messages = isIstent ? ISTENT_VALUE_MESSAGES : VALUE_MESSAGES;
+  const heading = isIstent
+    ? '# iStent infinite Value Story — Open-Angle Glaucoma'
+    : '# Alnyx (alphabetinib) Value Story — R/R MM';
+  const overarching = isIstent ? ISTENT_OVERARCHING_MESSAGE : OVERARCHING_MESSAGE;
+
+  const parts: string[] = [heading, ''];
   parts.push('## Overarching message');
-  parts.push(OVERARCHING_MESSAGE);
+  parts.push(overarching);
   parts.push('');
-  for (const domain of DOMAINS) {
+  for (const domain of domains) {
     parts.push(`## Domain: ${domain.name}`);
     parts.push(`Overarching: ${domain.overarching}`);
     parts.push('');
-    const messages = VALUE_MESSAGES.filter(m => m.domain === domain.key);
-    for (const m of messages) {
-      parts.push(`- **${m.id}** (Strength: ${m.strength}): ${m.text}`);
+    const domainMessages = messages.filter(m => m.domain === domain.key);
+    for (const m of domainMessages) {
+      const line = 'headline' in m ? `${m.headline} — ${m.text}` : m.text;
+      parts.push(`- **${m.id}** (Strength: ${m.strength}): ${line}`);
     }
     parts.push('');
   }

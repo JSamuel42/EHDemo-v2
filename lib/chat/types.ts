@@ -1,4 +1,5 @@
 import type { ModuleKey } from '@/lib/modules';
+import type { ProductId } from '@/lib/products/registry';
 
 export interface AttachedItem {
   id: string;
@@ -23,6 +24,7 @@ export interface ChatMessage {
 
 export interface ChatRequestBody {
   moduleKey: ModuleKey;
+  productId: ProductId;
   attachedItemIds: string[];
   messages: { role: 'user' | 'assistant'; content: string }[];
   /** True when the user message originated from a clickable suggested-question card. */

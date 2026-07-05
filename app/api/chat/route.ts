@@ -5,6 +5,7 @@ import type { ChatRequestBody } from '@/lib/chat/types';
 import { getChatConfig } from '@/lib/chat/module-registry';
 import { getCorpusEntries, getModuleCorpus } from '@/lib/chat/corpus';
 import type { ModuleKey } from '@/lib/modules';
+import { isProductId, type ProductId } from '@/lib/products/registry';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,7 @@ You are operating inside a demo of the Evidence Hub platform. Keep responses con
  */
 function buildSystem(
   moduleKey: ModuleKey,
+  productId: ProductId,
   attachedItemIds: string[],
   isSuggestedQuestion: boolean,
   previousModuleKey: ModuleKey | undefined,
@@ -50,7 +52,7 @@ function buildSystem(
 
   // Whole-corpus injection (Ask GVD): the role prompt contains
   // ${corpusMetadata} as a placeholder. Fill it with the module's full text.
-  const moduleCorpus = getModuleCorpus(moduleKey);
+  const moduleCorpus = getModuleCorpus(moduleKey, productId);
   if (prompt.includes('${corpusMetadata}')) {
     prompt = prompt.replace('${corpusMetadata}', moduleCorpus ?? '(No module corpus loaded.)');
   }
@@ -174,6 +176,12 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+  if (!isProductId(body.productId)) {
+    return new Response(JSON.stringify({ error: 'Invalid productId' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
     return new Response(JSON.stringify({ error: 'messages required' }), {
       status: 400,
@@ -183,6 +191,7 @@ export async function POST(req: NextRequest) {
 
   const system = buildSystem(
     body.moduleKey,
+    body.productId,
     body.attachedItemIds ?? [],
     body.isSuggestedQuestion ?? false,
     body.previousModuleKey,

@@ -40,7 +40,7 @@ export function SupportingArticles({
   placeholderCount = 0,
 }: Props) {
   const { productId } = useProduct();
-  const pubs = findPublicationsForMessage(module, messageId);
+  const pubs = findPublicationsForMessage(module, messageId, productId);
   const totalSlots = Math.max(pubs.length, placeholderCount);
   if (totalSlots === 0) return null;
 

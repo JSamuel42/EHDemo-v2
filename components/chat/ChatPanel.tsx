@@ -5,6 +5,7 @@ import { Sparkles, X, RotateCcw, Send, ArrowDown } from 'lucide-react';
 import type { ModuleKey } from '@/lib/modules';
 import type { ChatMessage, ChatRequestBody } from '@/lib/chat/types';
 import { getChatConfig } from '@/lib/chat/module-registry';
+import { useProduct } from '@/lib/products/context';
 import { suggestedQuestionsByCategory } from '@/lib/askgvd/data';
 import { useChatPanel } from './ChatPanelContext';
 import { renderWithCitations } from './CitationRenderer';
@@ -72,6 +73,7 @@ async function consumeStream(
 }
 
 export default function ChatPanel({ moduleKey }: { moduleKey: ModuleKey }) {
+  const { productId } = useProduct();
   const config = getChatConfig(moduleKey);
   const {
     attachedItems,
@@ -177,6 +179,7 @@ export default function ChatPanel({ moduleKey }: { moduleKey: ModuleKey }) {
 
     const requestBody: ChatRequestBody = {
       moduleKey,
+      productId,
       attachedItemIds: attachedIds,
       messages: [...messagesAtSendTime, userMsg].map(m => ({ role: m.role, content: m.content })),
       isSuggestedQuestion: args.isSuggestedQuestion,
