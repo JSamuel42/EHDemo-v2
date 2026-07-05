@@ -26,13 +26,13 @@ export default function HeroBand() {
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="flex flex-col items-center text-white/95">
           <span
-            className="font-playfair text-4xl tracking-[0.02em] leading-none"
+            className="font-sans font-semibold text-4xl tracking-[0.02em] leading-none"
             style={{ color: '#FFFFFF' }}
           >
             Evidence Hub
             <sup className="text-[0.42em] font-sans align-super ml-0.5 opacity-90">™</sup>
           </span>
-          <span className="mt-2 inline-flex items-center gap-1.5 text-white/85 font-playfair italic text-base tracking-[0.03em]">
+          <span className="mt-2 inline-flex items-center gap-1.5 text-white/85 font-sans italic text-base tracking-[0.03em]">
             <InfinityIcon size={16} strokeWidth={1.5} />
             <span>Access Infinity</span>
           </span>
@@ -42,7 +42,7 @@ export default function HeroBand() {
       {/* Bottom-left greeting */}
       <div className="absolute bottom-6 left-8 text-white">
         <h2
-          className="font-playfair text-2xl leading-tight"
+          className="font-sans font-semibold text-2xl leading-tight"
           style={{ color: '#FFFFFF' }}
         >
           Hello!

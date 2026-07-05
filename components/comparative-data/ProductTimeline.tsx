@@ -405,7 +405,7 @@ export default function ProductTimeline() {
       <div className="mb-4 flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
         <div>
           <h3
-            className="font-playfair text-xl leading-tight"
+            className="font-sans font-semibold text-xl leading-tight"
             style={{ color: 'var(--serif-foreground)' }}
           >
             Product Timeline

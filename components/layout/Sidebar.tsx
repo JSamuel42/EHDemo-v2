@@ -52,7 +52,7 @@ export default function Sidebar() {
             >
               {initials}
             </span>
-            <span className="font-playfair text-base text-serif-foreground">{product.name}</span>
+            <span className="font-sans text-base text-serif-foreground">{product.name}</span>
             <ChevronDown size={14} className="text-serif-muted-foreground" />
           </button>
         )}

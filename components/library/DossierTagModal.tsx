@@ -106,7 +106,7 @@ export default function DossierTagModal({
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-5 border-b border-serif-border flex-shrink-0">
           <div className="min-w-0">
-            <h2 id="tag-modal-title" className="font-playfair text-xl text-serif-foreground">
+            <h2 id="tag-modal-title" className="font-sans font-semibold text-xl text-serif-foreground">
               Tag to {dossierLabel} dossier
             </h2>
             <p className="text-xs mt-0.5 truncate max-w-sm text-serif-muted-foreground">

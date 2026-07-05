@@ -12,7 +12,7 @@ export default function ProjectsPage() {
   return (
     <div className="pl-8 pr-12 py-7 max-w-screen-2xl mx-auto">
       <header className="mb-6 flex items-start justify-between gap-4">
-        <h1 className="font-playfair text-3xl text-serif-foreground">
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground">
           Overview of Key Evidence Generation Activities for Alnyx
         </h1>
         <ViewToggle view={view} onChange={setView} />

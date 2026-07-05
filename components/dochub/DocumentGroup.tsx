@@ -131,7 +131,7 @@ function DocumentTitlePopover({ document: d }: { document: DocHubDocument }) {
           collisionPadding={12}
           className="z-50 w-[380px] rounded-lg border border-serif-border bg-white shadow-xl p-4"
         >
-          <h3 className="font-playfair text-base text-serif-foreground leading-snug">
+          <h3 className="font-sans text-base text-serif-foreground leading-snug">
             {d.title}
           </h3>
           <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wide font-mono text-serif-muted-foreground">

@@ -59,7 +59,7 @@ export default function DocumentHubPage() {
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="flex items-baseline justify-between mb-4 gap-4">
             <div>
-              <h1 className="font-playfair text-3xl text-serif-foreground">Document Hub</h1>
+              <h1 className="font-sans text-3xl font-semibold text-serif-foreground">Document Hub</h1>
               <p className="mt-1 text-[11px] uppercase tracking-[0.14em] font-mono text-serif-muted-foreground">
                 <span className="text-serif-foreground font-semibold">{total} documents</span>
                 {' · '}

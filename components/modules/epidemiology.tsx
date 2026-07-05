@@ -47,7 +47,7 @@ function AlnyxEpidemiology() {
   return (
     <div className="pl-8 pr-12 py-7 max-w-screen-2xl mx-auto">
       <header className="mb-6">
-        <h1 className="font-playfair text-3xl text-serif-foreground leading-tight">
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground leading-tight">
           Epidemiology — Target Population Funnels
         </h1>
         <p className="text-sm text-serif-muted-foreground mt-1">
@@ -94,7 +94,7 @@ function IstentEpidemiology() {
   return (
     <div className="pl-8 pr-12 py-7 max-w-screen-2xl mx-auto">
       <header className="mb-6">
-        <h1 className="font-playfair text-3xl text-serif-foreground leading-tight">
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground leading-tight">
           Epidemiology — Target Population Funnels
         </h1>
         <p className="text-sm text-serif-muted-foreground mt-1">

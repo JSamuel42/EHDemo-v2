@@ -57,7 +57,7 @@ export default function EvHubLogo({
     <span className={cn('inline-flex items-center', gap, className)}>
       <StackGlyph size={glyphSize} />
       <span
-        className={cn('font-playfair tracking-[0.18em] uppercase', textSize)}
+        className={cn('font-sans tracking-[0.18em] uppercase', textSize)}
         style={{ color: textColor }}
       >
         Evidence Hub

@@ -13,7 +13,7 @@ export default function ModuleStub({ moduleKey }: { moduleKey: ModuleKey }) {
         <ArrowLeft size={14} />
         Back to landing
       </Link>
-      <h1 className="font-playfair text-headline text-serif-foreground mb-3">
+      <h1 className="font-sans font-bold text-headline text-serif-foreground mb-3">
         {m.name}
       </h1>
       <p className="text-serif-muted-foreground">

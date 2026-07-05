@@ -133,7 +133,7 @@ export default function AskGvdPage() {
       )}
     >
       <div className="px-8 pt-7 pb-4">
-        <h1 className="font-playfair text-3xl text-serif-foreground mb-4">Ask GVD</h1>
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground mb-4">Ask GVD</h1>
         <div className="flex flex-wrap items-center gap-3">
           <DocumentSelector
             documents={GVD_DOCUMENTS}

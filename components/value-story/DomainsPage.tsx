@@ -64,7 +64,7 @@ export default function DomainsPage({
         }}
       >
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="font-playfair text-3xl text-serif-foreground mb-3">
+          <h1 className="font-sans font-semibold text-3xl text-serif-foreground mb-3">
             Explore Value Stories
           </h1>
           <p className="text-sm leading-relaxed text-serif-foreground/85">
@@ -156,7 +156,7 @@ export default function DomainsPage({
               <span
                 aria-hidden
                 className={cn(
-                  'absolute bottom-2 right-3 font-playfair font-bold pointer-events-none select-none',
+                  'absolute bottom-2 right-3 font-sans font-bold pointer-events-none select-none',
                   d.text_on_gradient_class,
                 )}
                 // Dialled-down watermark — half the previous footprint so the

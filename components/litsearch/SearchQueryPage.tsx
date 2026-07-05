@@ -330,7 +330,7 @@ export default function SearchQueryPage({ initialSavedSearch }: SearchQueryPageP
           style={{ paddingTop: '10px', paddingBottom: '4px' }}
         >
           <div>
-            <h1 className="font-playfair text-xl font-normal" style={{ color: 'var(--serif-foreground)' }}>
+            <h1 className="font-sans text-xl font-normal" style={{ color: 'var(--serif-foreground)' }}>
               Literature Reviews
             </h1>
             <input

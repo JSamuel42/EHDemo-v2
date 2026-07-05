@@ -89,7 +89,7 @@ export default function DomainDetailPage({ domainKey, onChangeDomain, onBack }: 
           domain.banner_class,
         )}
       >
-        <h1 className="font-playfair text-2xl text-slate-900 mb-2">
+        <h1 className="font-sans font-semibold text-2xl text-slate-900 mb-2">
           {domainIndex + 1}. {domain.bannerTitle}
         </h1>
         <p className="text-sm leading-relaxed text-slate-800 max-w-4xl">{domain.overarching}</p>

@@ -7,14 +7,14 @@ interface Props {
 }
 
 /**
- * Product wordmark — Playfair Display with a teal accent dot before the
+ * Product wordmark — Source Sans with a teal accent dot before the
  * name. Demo-grade — easy to swap for a polished logo later without
  * touching the surrounding banner layout.
  */
 export default function ProductWordmark({ className, size = 28 }: Props) {
   return (
     <span
-      className={cn('inline-flex items-center gap-2 font-playfair', className)}
+      className={cn('inline-flex items-center gap-2 font-sans', className)}
       style={{ fontSize: size, lineHeight: 1 }}
     >
       <span

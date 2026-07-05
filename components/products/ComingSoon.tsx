@@ -46,7 +46,7 @@ export default function ComingSoon({
           {categoryLabel}
         </div>
 
-        <h1 className="font-playfair text-3xl text-serif-foreground mb-3">
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground mb-3">
           {moduleLabel}
         </h1>
 

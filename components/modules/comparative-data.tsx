@@ -32,7 +32,7 @@ export default function ComparativeDataPage() {
   return (
     <div className="pl-8 pr-12 py-7 max-w-7xl mx-auto">
       {/* Title */}
-      <h1 className="font-playfair text-3xl text-serif-foreground leading-tight">
+      <h1 className="font-sans font-semibold text-3xl text-serif-foreground leading-tight">
         Comparative Data
       </h1>
 

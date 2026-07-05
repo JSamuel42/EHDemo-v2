@@ -314,7 +314,7 @@ function LibraryPageInner() {
   return (
     <div className="px-8 py-7">
       <div className="flex items-baseline justify-between mb-5 gap-4">
-        <h1 className="font-playfair text-3xl text-serif-foreground">Library</h1>
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground">Library</h1>
         <div className="flex items-center gap-2">
           {isIstent && (
             <button

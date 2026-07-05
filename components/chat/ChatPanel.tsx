@@ -330,7 +330,7 @@ export default function ChatPanel({ moduleKey }: { moduleKey: ModuleKey }) {
         >
           <div className="flex items-center gap-2 text-white">
             <Sparkles size={16} className="text-[color:var(--evhub-mint)]" />
-            <span className="font-playfair text-base">{config.panelTitle}</span>
+            <span className="font-sans text-base">{config.panelTitle}</span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -408,7 +408,7 @@ export default function ChatPanel({ moduleKey }: { moduleKey: ModuleKey }) {
             aria-label={streaming ? 'AI is thinking' : 'AI ready'}
             role="status"
           />
-          <span className="font-playfair text-sm text-serif-foreground tracking-[0.01em]">
+          <span className="font-sans text-sm text-serif-foreground tracking-[0.01em]">
             Ask<sup className="text-[0.62em] font-sans align-super ml-0.5 tracking-wider">AI</sup>
           </span>
         </div>

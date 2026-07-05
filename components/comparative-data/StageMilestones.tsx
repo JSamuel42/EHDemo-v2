@@ -309,7 +309,7 @@ export default function StageMilestones() {
     <div className="w-full">
       <div className="mb-4">
         <h3
-          className="font-playfair text-xl leading-tight"
+          className="font-sans font-semibold text-xl leading-tight"
           style={{ color: 'var(--serif-foreground)' }}
         >
           Product milestones

@@ -29,7 +29,6 @@ const config: Config = {
         },
       },
       fontFamily: {
-        playfair: ['var(--font-playfair)', 'Georgia', 'serif'],
         sans:     ['var(--font-source-sans)', 'system-ui', 'sans-serif'],
         mono:     ['var(--font-ibm-mono)', 'monospace'],
       },

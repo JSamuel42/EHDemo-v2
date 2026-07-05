@@ -25,7 +25,7 @@ export default function DomainsPage({ onSelectDomain }: Props) {
     // stay clear of the chat panel rail.
     <div className="pl-8 pr-12 py-7 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="font-playfair text-3xl text-serif-foreground">Objection Handling</h1>
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground">Objection Handling</h1>
         <p className="text-sm text-serif-muted-foreground mt-1.5 max-w-2xl">
           Anticipated payer objections by domain, with field-ready handlers and supporting
           publications.
@@ -51,7 +51,7 @@ export default function DomainsPage({ onSelectDomain }: Props) {
               <span
                 aria-hidden
                 className={cn(
-                  'absolute bottom-2 right-3 font-playfair font-bold pointer-events-none select-none',
+                  'absolute bottom-2 right-3 font-sans font-bold pointer-events-none select-none',
                   domain.text_on_gradient_class,
                 )}
                 style={{ fontSize: 72, lineHeight: 1 }}

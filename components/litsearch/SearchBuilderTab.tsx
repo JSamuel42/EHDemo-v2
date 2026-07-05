@@ -737,7 +737,7 @@ export default function SearchBuilderTab({ state, dispatch, onRunSearch, onSaveS
                 <div className="h-[3px] w-full" style={{ backgroundColor: '#083860' }} />
                 <div className="p-5 flex flex-col gap-4">
                   <div>
-                    <h3 className="font-playfair text-lg leading-snug" style={{ color: 'var(--serif-foreground)' }}>
+                    <h3 className="font-sans font-semibold text-lg leading-snug" style={{ color: 'var(--serif-foreground)' }}>
                       Search returned {state.totalHits.toLocaleString()} {state.totalHits === 1 ? 'article' : 'articles'}
                     </h3>
                     <p className="font-mono text-[11px] mt-0.5" style={{ color: 'var(--serif-muted-foreground)' }}>

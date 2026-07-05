@@ -55,7 +55,7 @@ export default function PillarDetailPage({ pillarKey, onChangePillar, onBack }: 
         <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-600 mb-2">
           Pillar {String(pillar.number).padStart(2, '0')}
         </div>
-        <h2 className="font-playfair text-2xl text-slate-900 mb-5 leading-tight">
+        <h2 className="font-sans font-semibold text-2xl text-slate-900 mb-5 leading-tight">
           {pillar.fullName}
         </h2>
 
@@ -79,7 +79,7 @@ export default function PillarDetailPage({ pillarKey, onChangePillar, onBack }: 
 
       {/* Counts row */}
       <div className="flex items-baseline justify-between">
-        <h3 className="font-playfair text-xl text-serif-foreground">Scientific Statements</h3>
+        <h3 className="font-sans font-semibold text-xl text-serif-foreground">Scientific Statements</h3>
         <div className="flex items-center gap-3 text-[11px] uppercase tracking-wide font-mono text-serif-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Diamond size={11} />

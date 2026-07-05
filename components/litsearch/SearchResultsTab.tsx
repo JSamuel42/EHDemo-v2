@@ -396,7 +396,7 @@ export default function SearchResultsTab({ state, dispatch, onOpenModal, onScree
       {/* Section 4 — Results table */}
       <div>
         <div className="flex items-baseline justify-between mb-1">
-          <h2 className="font-playfair text-xl font-normal" style={{ color: 'var(--serif-foreground)' }}>
+          <h2 className="font-sans text-xl font-normal" style={{ color: 'var(--serif-foreground)' }}>
             AI screened search results
           </h2>
           <span className="font-mono text-[10px]" style={{ color: 'var(--serif-muted-foreground)' }}>
@@ -495,7 +495,7 @@ export default function SearchResultsTab({ state, dispatch, onOpenModal, onScree
                       </td>
                       <td className="px-3 py-2.5">
                         <div
-                          className="font-playfair text-[12.5px] leading-snug line-clamp-2 cursor-pointer hover:text-[#083860]"
+                          className="font-sans text-[12.5px] leading-snug line-clamp-2 cursor-pointer hover:text-[#083860]"
                           onClick={() => onOpenModal(article)}
                         >
                           {article.title}

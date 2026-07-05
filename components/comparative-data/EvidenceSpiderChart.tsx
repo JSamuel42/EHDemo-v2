@@ -304,7 +304,7 @@ export default function EvidenceSpiderChart() {
       <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
         <div>
           <h3
-            className="font-playfair text-xl leading-tight"
+            className="font-sans text-xl leading-tight font-semibold"
             style={{ color: 'var(--serif-foreground)' }}
           >
             Evidence Profile

@@ -24,7 +24,7 @@ export default function PillarsPage({ onSelectPillar }: Props) {
     <div className="space-y-6">
       {/* Title card */}
       <section className="rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200 p-8">
-        <h1 className="font-playfair text-3xl text-serif-foreground mb-3 leading-tight">
+        <h1 className="font-sans font-semibold text-3xl text-serif-foreground mb-3 leading-tight">
           {MODULE_TITLE}
         </h1>
         <p className="text-base text-slate-700 leading-relaxed max-w-3xl">
@@ -51,7 +51,7 @@ export default function PillarsPage({ onSelectPillar }: Props) {
               <span
                 aria-hidden
                 className={cn(
-                  'absolute bottom-2 right-3 font-playfair font-bold pointer-events-none select-none',
+                  'absolute bottom-2 right-3 font-sans font-bold pointer-events-none select-none',
                   pillar.text_on_gradient_class,
                 )}
                 style={{ fontSize: 72, lineHeight: 1 }}
@@ -63,7 +63,7 @@ export default function PillarsPage({ onSelectPillar }: Props) {
                 <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-500 mb-2">
                   Pillar {String(pillar.number).padStart(2, '0')}
                 </div>
-                <h2 className="font-playfair text-xl text-slate-900 mb-4 leading-tight">
+                <h2 className="font-sans font-semibold text-xl text-slate-900 mb-4 leading-tight">
                   {pillar.name}
                 </h2>
 

@@ -91,7 +91,7 @@ export default function AbstractModal({ article, screening, highlightTerms, crit
             ×
           </button>
           <h2
-            className="font-playfair text-[15px] font-normal leading-snug pr-10"
+            className="font-sans text-[15px] font-normal leading-snug pr-10"
             style={{ color: 'var(--serif-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
           >
             {article.title}

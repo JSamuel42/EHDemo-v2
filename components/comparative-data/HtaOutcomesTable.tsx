@@ -58,7 +58,7 @@ export default function HtaOutcomesTable() {
     <div className="w-full">
       <div className="mb-3">
         <h3
-          className="font-playfair text-lg leading-tight"
+          className="font-sans font-semibold text-lg leading-tight"
           style={{ color: 'var(--serif-foreground)' }}
         >
           HTA outcomes

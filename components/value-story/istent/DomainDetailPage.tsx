@@ -84,7 +84,7 @@ export default function DomainDetailPage({ domainKey, onChangeDomain, onBack }: 
           domain.gradient_class,
         )}
       >
-        <h2 className="font-playfair text-2xl text-slate-900 mb-2">{domain.name}</h2>
+        <h2 className="font-sans font-semibold text-2xl text-slate-900 mb-2">{domain.name}</h2>
         <p className="text-sm leading-relaxed text-slate-800 max-w-4xl">
           {domain.overarching}
         </p>
@@ -92,7 +92,7 @@ export default function DomainDetailPage({ domainKey, onChangeDomain, onBack }: 
 
       {/* Messages section */}
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="font-playfair text-xl text-serif-foreground">Value Messages</h3>
+        <h3 className="font-sans font-semibold text-xl text-serif-foreground">Value Messages</h3>
         <div className="flex items-center gap-3 text-[11px] uppercase tracking-wide font-mono text-serif-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Diamond size={11} />
