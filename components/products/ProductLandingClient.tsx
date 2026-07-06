@@ -4,10 +4,10 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CATEGORIES,
+  getCategoriesForProduct,
   productHref,
   type CategoryId,
   type ProductDef,
-  type ResolvedCategory,
 } from '@/lib/products/registry';
 import {
   getCollapsedIdsServerSnapshot,
@@ -20,12 +20,11 @@ import CategorySection from './CategorySection';
 
 export default function ProductLandingClient({
   product,
-  categories,
 }: {
   product: ProductDef;
-  categories: ResolvedCategory[];
 }) {
   const router = useRouter();
+  const categories = useMemo(() => getCategoriesForProduct(product.id), [product.id]);
 
   // Default first load: all expanded. Collapse state is global across
   // products (the four categories are shared) and persists across reload +

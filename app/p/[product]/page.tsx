@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getCategoriesForProduct, getProduct, isProductId } from '@/lib/products/registry';
+import { getProduct, isProductId } from '@/lib/products/registry';
 import ProductLandingClient from '@/components/products/ProductLandingClient';
 
 export default async function ProductLanding({
@@ -10,10 +10,5 @@ export default async function ProductLanding({
   const { product } = await params;
   if (!isProductId(product)) notFound();
 
-  return (
-    <ProductLandingClient
-      product={getProduct(product)}
-      categories={getCategoriesForProduct(product)}
-    />
-  );
+  return <ProductLandingClient product={getProduct(product)} />;
 }

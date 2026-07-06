@@ -56,8 +56,10 @@ export function getCollapsedIdsSnapshot(): CategoryId[] {
   return cachedIds;
 }
 
+const EMPTY_IDS: CategoryId[] = [];
+
 export function getCollapsedIdsServerSnapshot(): CategoryId[] {
-  return [];
+  return EMPTY_IDS;
 }
 
 /** Writes the collapsed set and notifies same-tab subscribers immediately
